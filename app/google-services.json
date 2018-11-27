@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "342133585937",
+    "firebase_url": "https://controlapp-cf7a6.firebaseio.com",
+    "project_id": "controlapp-cf7a6",
+    "storage_bucket": "controlapp-cf7a6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342133585937:android:35d21922ec5af9e7",
+        "android_client_info": {
+          "package_name": "edu.und.beuning.john.uav_host"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "342133585937-qt6gm9f39c6ub13ha6t59mfkinamv9rr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgRk0sVWEIEKus-Q_Yxc2fNCQXR5kzVoQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342133585937:android:783e0c3582f9dcec",
+        "android_client_info": {
+          "package_name": "edu.und.beuning.john.uav_remote"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "342133585937-qt6gm9f39c6ub13ha6t59mfkinamv9rr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgRk0sVWEIEKus-Q_Yxc2fNCQXR5kzVoQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
