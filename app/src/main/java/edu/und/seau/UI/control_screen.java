@@ -1,10 +1,12 @@
-package edu.und.beuning.john.uav_remote;
+package edu.und.seau.UI;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,8 +18,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,27 +35,30 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import edu.und.seau.lib.UAV.logic.ControlServoLogic;
+import edu.und.seau.lib.UAV.objects.ControlServo;
+import edu.und.seau.uav_remote.R;
 
-public class control_screen  extends AppCompatActivity implements SensorEventListener {
+
+public class control_screen extends AppCompatActivity implements SensorEventListener {
 
 
     //Flight Variables
     private String control_command, UAV_Pilot_name;
-    private int cmd;
 
     // TextView Variables
     private TextView Roll;
     private TextView Pitch;
     private TextView Yaw;
-    private TextView YawOrientation;
-    private TextView PitchOrientation;
     private TextView MotorControl;
     private TextView Accum1;
     private TextView Accum2;
@@ -65,10 +68,10 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
     private TextView USBData;
 
     //PID Variables
-    private TextView Servo1;
-    private TextView Servo2;
-    private TextView Servo3;
-    private TextView Servo4;
+    private TextView TextView_Servo1;
+    private TextView TextView_Servo2;
+    private TextView TextView_Servo3;
+    private TextView TextView_Servo4;
     public double CalcTimer;
     boolean ServoRight;
     boolean ServoLeft;
@@ -80,95 +83,59 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
     public float[] DesiredOrientationPitch_Array = {0, 0, 0, 0};  // { Front Left, Front Right, Back Left, Back Right }
     public float[] DesiredOrientationYaw_Array = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
 
-    public float Servo1_Pitch_PMW_Output = 0;
-    public float Servo1_Yaw_PMW_Output = 0;
-    public float Servo1_PWM_Output = 0;
 
-    public float Servo2_Pitch_PMW_Output = 0;
-    public float Servo2_Yaw_PMW_Output = 0;
-    public float Servo2_PWM_Output = 0;
+    public ControlServo Servo1;
+    public ControlServo Servo2;
+    public ControlServo Servo3;
+    public ControlServo Servo4;
 
-    public float Servo3_Pitch_PMW_Output = 0;
-    public float Servo3_Yaw_PMW_Output = 0;
-    public float Servo3_PWM_Output = 0;
+    private boolean areServosInitialized = false;
+    private void InitializeServoSettings() {
+        if(areServosInitialized)
+        {
+            return;
+        }
 
-    public float Servo4_Pitch_PMW_Output = 0;
-    public float Servo4_Yaw_PMW_Output = 0;
-    public float Servo4_PWM_Output = 0;
+        //InitializeServoSettings Servo 1
+        Servo1 = new ControlServo();
+        Servo1.setPitch_PTerm(.75);
+        Servo1.setPitch_ITerm(.0001);
+        Servo1.setPitch_DTerm((.95));
+        Servo1.setYaw_PTerm(.075);
+        Servo1.setYaw_ITerm(.0001);
+        Servo1.setYaw_DTerm(.95);
 
-    //PID Servo 1 Pitch Constants
-    public double Servo1_Pitch_PTerm = 0;
-    public double Servo1_Pitch_ITerm = 0;
-    public double Servo1_Pitch_DTerm = 0;
-    public float Servo1_Pitch_Accumulator;
-    public float[] Servo1_Pitch_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo1_Pitch_Current_i = 0;
-    public float Servo1_Pitch_Delta = 0;
+        //InitializeServoSettings Servo 2
+        Servo2 = new ControlServo();
+        Servo2.setPitch_PTerm(.75);
+        Servo2.setPitch_ITerm(.0001);
+        Servo2.setPitch_DTerm(.5);
+        Servo2.setYaw_DTerm(.5);
+        Servo2.setPitch_DTerm((.95));
+        Servo2.setYaw_PTerm(.075);
+        Servo2.setYaw_ITerm(.0001);
+        Servo2.setYaw_DTerm(.95);
 
-    //PID Servo 1 Yaw Constants
-    public double Servo1_Yaw_PTerm = 0;
-    public double Servo1_Yaw_ITerm = 0;
-    public double Servo1_Yaw_DTerm = 0;
-    public float Servo1_Yaw_Accumulator;
-    public float[] Servo1_Yaw_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo1_Yaw_Current_i = 0;
-    public float Servo1_Yaw_Delta = 0;
+        //InitializeServoSettings Servo 3
+        Servo3 = new ControlServo();
+        Servo3.setPitch_PTerm(.75);
+        Servo3.setPitch_ITerm(.0001);
+        Servo3.setPitch_DTerm((.95));
+        Servo3.setYaw_PTerm(.075);
+        Servo3.setYaw_ITerm(.0001);
+        Servo3.setYaw_DTerm(.95);
 
-    //PID Servo 2 Pitch Constants
-    public double Servo2_Pitch_PTerm = 0;
-    public double Servo2_Pitch_ITerm = 0;
-    public double Servo2_Pitch_DTerm = 1/2;
-    public float Servo2_Pitch_Accumulator;
-    public float[] Servo2_Pitch_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo2_Pitch_Current_i = 0;
-    public float Servo2_Pitch_Delta = 0;
+        //InitializeServoSettings Servo 4
+        Servo4 = new ControlServo();
+        Servo4.setPitch_PTerm(.75);
+        Servo4.setPitch_ITerm(.0001);
+        Servo4.setPitch_DTerm((.95));
+        Servo4.setYaw_PTerm(.075);
+        Servo4.setYaw_ITerm(.0001);
+        Servo4.setYaw_DTerm(.95);
 
-    //PID Servo 2 Yaw Constants
-    public double Servo2_Yaw_PTerm = 0;
-    public double Servo2_Yaw_ITerm = 0;
-    public double Servo2_Yaw_DTerm = 1/2;
-    public float Servo2_Yaw_Accumulator;
-    public float[] Servo2_Yaw_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo2_Yaw_Current_i = 0;
-    public float Servo2_Yaw_Delta = 0;
-
-    //PID Servo 3 Pitch Constants
-    public double Servo3_Pitch_PTerm = 0;
-    public double Servo3_Pitch_ITerm = 0;
-    public double Servo3_Pitch_DTerm = 0;
-    public float Servo3_Pitch_Accumulator;
-    public float[] Servo3_Pitch_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo3_Pitch_Current_i = 0;
-    public float Servo3_Pitch_Delta = 0;
-
-    //PID Servo 3 Yaw Constants
-    public double Servo3_Yaw_PTerm = 0;
-    public double Servo3_Yaw_ITerm = 0;
-    public double Servo3_Yaw_DTerm = 0;
-    public float Servo3_Yaw_Accumulator;
-    public float[] Servo3_Yaw_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo3_Yaw_Current_i = 0;
-    public float Servo3_Yaw_Delta = 0;
-
-    //PID Servo 4 Pitch Constants
-    public double Servo4_Pitch_PTerm = 0;
-    public double Servo4_Pitch_ITerm = 0;
-    public double Servo4_Pitch_DTerm = 0;
-    public float Servo4_Pitch_Accumulator;
-    public float[] Servo4_Pitch_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo4_Pitch_Current_i = 0;
-    public float Servo4_Pitch_Delta = 0;
-
-    //PID Servo 4 Yaw Constants
-    public double Servo4_Yaw_PTerm = 0;
-    public double Servo4_Yaw_ITerm = 0;
-    public double Servo4_Yaw_DTerm = 0;
-    public float Servo4_Yaw_Accumulator;
-    public float[] Servo4_Yaw_Error = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public int Servo4_Yaw_Current_i = 0;
-    public float Servo4_Yaw_Delta = 0;
-
-
+        areServosInitialized = true;
+    }
 
     //Sensor Data
     private SensorManager SensorData;
@@ -209,12 +176,8 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         @Override
         public void onReceivedData(byte[] arg0) {
             String data = null;
-            try {
-                data = new String(arg0, "UTF-8");
-                data.concat("/n");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+            data = new String(arg0, StandardCharsets.UTF_8);
+            data.concat("/n");
         }
     };
 
@@ -259,37 +222,31 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        InitializeServoSettings();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.control_screen);
 
         //Find TextView variables for GYRO
-        Roll = (TextView) findViewById(R.id.Roll);
-        Pitch = (TextView) findViewById(R.id.Pitch);
-        Yaw = (TextView) findViewById(R.id.Yaw);
-        YawOrientation = (TextView) findViewById(R.id.YawOrientation);
-        PitchOrientation = (TextView) findViewById(R.id.PitchOrientation);
-        MotorControl = (TextView) findViewById(R.id.MotorControl);
-        Servo1 = (TextView) findViewById(R.id.Servo1);
-        Servo2 = (TextView) findViewById(R.id.Servo2);
-        Servo3 = (TextView) findViewById(R.id.Servo3);
-        Servo4 = (TextView) findViewById(R.id.Servo4);
-        Accum1 = (TextView) findViewById(R.id.Accum1);
-        Accum2 = (TextView) findViewById(R.id.Accum2);
-        Accum3 = (TextView) findViewById(R.id.Accum3);
-        Accum4 = (TextView) findViewById(R.id.Accum4);
+        Roll = findViewById(R.id.Roll);
+        Pitch = findViewById(R.id.Pitch);
+        Yaw = findViewById(R.id.Yaw);
+        TextView yawOrientation = findViewById(R.id.YawOrientation);
+        TextView pitchOrientation = findViewById(R.id.PitchOrientation);
+        MotorControl = findViewById(R.id.MotorControl);
+        TextView_Servo1 = findViewById(R.id.Servo1);
+        TextView_Servo2 = findViewById(R.id.Servo2);
+        TextView_Servo3 = findViewById(R.id.Servo3);
+        TextView_Servo4 = findViewById(R.id.Servo4);
+        Accum1 = findViewById(R.id.Accum1);
+        Accum2 = findViewById(R.id.Accum2);
+        Accum3 = findViewById(R.id.Accum3);
+        Accum4 = findViewById(R.id.Accum4);
         //Connect to Sensor
         SensorData = (SensorManager) getSystemService(SENSOR_SERVICE);
         user_name = getIntent().getExtras().get("user_name").toString();
         UAV_name = getIntent().getExtras().get("UAV_name").toString();
         setTitle(" UAV Control: " + user_name);
-
-                                                        Servo1_Pitch_PTerm = Servo2_Pitch_PTerm = Servo3_Pitch_PTerm = Servo4_Pitch_PTerm = .075;
-                                                        Servo1_Pitch_ITerm = Servo2_Pitch_ITerm = Servo3_Pitch_ITerm = Servo4_Pitch_ITerm = .0001;
-                                                        Servo1_Pitch_DTerm = Servo2_Pitch_DTerm = Servo3_Pitch_DTerm = Servo4_Pitch_DTerm = .95;
-                                                        Servo1_Yaw_PTerm = Servo2_Yaw_PTerm = Servo3_Yaw_PTerm = Servo4_Yaw_PTerm = .075;
-                                                        Servo1_Yaw_ITerm = Servo2_Yaw_ITerm = Servo3_Yaw_ITerm = Servo4_Yaw_ITerm = .0001;
-                                                        Servo1_Yaw_DTerm = Servo2_Yaw_DTerm = Servo3_Yaw_DTerm = Servo4_Yaw_DTerm = .95;
-
 
         appendLog("Time\tYaw\tPitch\tOutput Array");
 
@@ -322,12 +279,12 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         });
 
 
-        USBStatus = (TextView) findViewById(R.id.usb_status);
+        USBStatus = findViewById(R.id.usb_status);
 
         //Added by John for defining Text Views so I can write to them later
-        usbManager = (UsbManager) getSystemService(this.USB_SERVICE);
-        startButton = (Button) findViewById(R.id.buttonStart);
-        stopButton = (Button) findViewById(R.id.buttonStop);
+        usbManager = (UsbManager) getSystemService(USB_SERVICE);
+        startButton = findViewById(R.id.buttonStart);
+        stopButton = findViewById(R.id.buttonStop);
         setUiEnabled(false);
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
@@ -336,13 +293,13 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         registerReceiver(broadcastReceiver, filter);
 
 
-        // Initialize Text Vars
-        chat_conversation = (TextView) findViewById(R.id.textView);
-        USBData = (TextView) findViewById(R.id.usb_data);
-        USBStatus = (TextView) findViewById(R.id.usb_status);
+        // InitializeServoSettings Text Vars
+        chat_conversation = findViewById(R.id.textView);
+        USBData = findViewById(R.id.usb_data);
+        USBStatus = findViewById(R.id.usb_status);
 
 
-        // GPS Initilization
+        // GPS Initialization
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationListener = new LocationListener() { // This is where the values for time, alt, long, and lat are defined.
             @Override
@@ -370,7 +327,17 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
 
         // Function called ever 5 seconds to find new coordinates
         //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, locationListener); // (type, refresh time (ms), distance needed for change (m), pointer)
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,0, locationListener); // (type, refresh time (ms), distance needed for change (m), pointer)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener); // (type, refresh time (ms), distance needed for change (m), pointer)
 
 
     }
@@ -413,13 +380,13 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
 
         if (UAV_Pilot_name.equals("HOST")) {
 
-            cmd = check_for_err(control_command);
+            int cmd = check_for_err(control_command);
             Map<String, Object> map = new HashMap<String, Object>();
             //temp_key = root.push().getKey();
             DatabaseReference message_root = root.child(temp_key);
 
             byte j;
-            Log.d("D","CMD = "+cmd);
+            Log.d("D","CMD = "+ cmd);
             switch (cmd) {
 
                 case 79:
@@ -1218,13 +1185,10 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         //Log.d("Event Value 0", " "+ event.values[0]);
        // Log.d("Event Value 1", " "+ event.values[1]);
        // Log.d("Event Value 2", " "+ event.values[2]);
-
-
-
-        Servo1_PWM_Output = Servo1_Pitch_PMW_Output + Servo1_Yaw_PMW_Output+Servo_Arr[0];
-        Servo2_PWM_Output = Servo2_Pitch_PMW_Output + Servo2_Yaw_PMW_Output+Servo_Arr[1];
-        Servo3_PWM_Output = Servo3_Pitch_PMW_Output + Servo3_Yaw_PMW_Output+Servo_Arr[2];
-        Servo4_PWM_Output = Servo4_Pitch_PMW_Output + Servo4_Yaw_PMW_Output+Servo_Arr[3];
+        Servo1.setPWM_Output(Servo1.getPitch_PMW_Output()+Servo1.getYaw_PMW_Output()+Servo_Arr[0]);
+        Servo2.setPWM_Output(Servo2.getPitch_PMW_Output()+Servo2.getYaw_PMW_Output()+Servo_Arr[1]);
+        Servo3.setPWM_Output(Servo3.getPitch_PMW_Output()+Servo3.getYaw_PMW_Output()+Servo_Arr[2]);
+        Servo4.setPWM_Output(Servo4.getPitch_PMW_Output()+Servo4.getYaw_PMW_Output()+Servo_Arr[3]);
 
         //Log.d("Servo1_Pitch_PMW_Output",Float.toString(Servo1_Pitch_PMW_Output));
         //Log.d("Servo1_Yaw_PMW_Output",Float.toString(Servo1_Yaw_PMW_Output));
@@ -1232,10 +1196,10 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         //Log.d("Servo1_PWM_Output",Float.toString(Servo1_PWM_Output));
 
 
-        Servo_Arr2[0]=(byte) Servo1_PWM_Output;
-        Servo_Arr2[1]=(byte) Servo2_PWM_Output;
-        Servo_Arr2[2]=(byte) Servo3_PWM_Output;
-        Servo_Arr2[3]=(byte) Servo4_PWM_Output;
+        Servo_Arr2[0]=(byte) Servo1.getPWM_Output();
+        Servo_Arr2[1]=(byte) Servo2.getPWM_Output();
+        Servo_Arr2[2]=(byte) Servo3.getPWM_Output();
+        Servo_Arr2[3]=(byte) Servo4.getPWM_Output();
 
         appendLog(Float.toString(System.currentTimeMillis())+"\t"+Float.toString(event.values[1])+"\t"+Float.toString(event.values[2])+"\t"+Arrays.toString(Servo_Arr2));
         //Log.d("Serial Data", Arrays.toString(Servo_Arr2));
@@ -1243,10 +1207,10 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
         for (byte j = 0; j < 4; j++) {
             Servo_Arr2[j] = chk_min_max_speed(Servo_Arr2[j]);
         } // Check for min and max servo speed
-        Servo1.setText("Servo1%:" + Servo_Arr2[0]);
-        Servo2.setText("Servo2%:" + Servo_Arr2[1]);
-        Servo3.setText("Servo3%:" + Servo_Arr2[2]);
-        Servo4.setText("Servo4%:" + Servo_Arr2[3]);
+        TextView_Servo1.setText("TextView_Servo1%:" + Servo_Arr2[0]);
+        TextView_Servo2.setText("TextView_Servo2%:" + Servo_Arr2[1]);
+        TextView_Servo3.setText("TextView_Servo3%:" + Servo_Arr2[2]);
+        TextView_Servo4.setText("TextView_Servo4%:" + Servo_Arr2[3]);
         if (usb_is_connected) serialPort.write(Servo_Arr2);
         //USBData.setText("Serial Data Sent From Gyro");
 
@@ -1296,36 +1260,38 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
 
         byte i;
         float PIDValue;
+        float pitchError = 0.0f;
+        float pitchDelta;
+        float pitchPWMOutput;
 
-        Servo1_Pitch_Error[Servo1_Pitch_Current_i]=PitchErrorServo1;
+        float[] servo1PitchError = Servo1.getPitch_Error();
+        servo1PitchError[Servo1.getPitch_Current_i()] = PitchErrorServo1;
+        Servo1.setPitch_Error(servo1PitchError);
 
         //Log.d("Servo1PiErrorCurrenti]",Float.toString(PitchErrorServo1));
 
+
         for (i=0;i<10;i++){
-            Servo1_Pitch_Accumulator += Math.round(Servo1_Pitch_Error[i]);
+            pitchError += Math.round(Servo1.getPitch_ErrorIndex(i));
         }
+        Servo1.setPitch_Accumulator(Servo1.getPitch_Accumulator() + pitchError);
 
-        //for (float j : Servo1_Pitch_Error) {Servo1_Pitch_Accumulator += Math.round(j);}
 
+        pitchDelta = Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i())-Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i() -1);
+        Servo1.setPitch_Delta(pitchDelta);
 
-        if(Servo1_Pitch_Current_i != 0) {
-            Servo1_Pitch_Delta = Servo1_Pitch_Error[Servo1_Pitch_Current_i] - Servo1_Pitch_Error[Servo1_Pitch_Current_i - 1];
-        }
-        else{
-            Servo1_Pitch_Delta = Servo1_Pitch_Error[Servo1_Pitch_Current_i] - Servo1_Pitch_Error[9];
-        }
-
-        PIDValue = (float) ((Servo1_Pitch_Error[Servo1_Pitch_Current_i] * Servo1_Pitch_PTerm) + (Servo1_Pitch_ITerm * Servo1_Pitch_Accumulator) + (Servo1_Pitch_DTerm * Servo1_Pitch_Delta));
+        PIDValue = (float) ((Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i()) * Servo1.getPitch_PTerm()) + (Servo1.getPitch_ITerm() * Servo1.getPitch_Accumulator()) + (Servo1.getPitch_DTerm() * Servo1.getPitch_Delta()));
         //Log.d("PitchPIDValue",Float.toString(PIDValue));
 
-        Servo1_Pitch_PMW_Output=PIDValue;
-        if(Servo1_Pitch_PMW_Output > 50) Servo1_Pitch_PMW_Output = 50;
-        if(Servo1_Pitch_PMW_Output < -50) Servo1_Pitch_PMW_Output = -50;
+        pitchPWMOutput = PIDValue;
+        pitchPWMOutput = Math.min(pitchPWMOutput,50);
+        pitchPWMOutput = Math.max(pitchPWMOutput,-50);
+        Servo1.setPitch_PMW_Output(pitchPWMOutput);
 
-        Servo1_Pitch_Current_i++;
-        if(Servo1_Pitch_Current_i > 9) Servo1_Pitch_Current_i=0;
+        Servo1.setPitch_Current_i(Servo1.getPitch_Current_i() + 1);
 
-        /*
+
+        /*s
         for(i=0;i<10;i++) {
             Servo1_Pitch_Error[i + 1] = Servo1_Pitch_Error[i];
             Servo1_Pitch_Error[0] = -1*(DesiredOrientationPitch_Array[0] - PitchErrorServo1);}
@@ -1345,213 +1311,38 @@ public class control_screen  extends AppCompatActivity implements SensorEventLis
     }
 
     public void CalculatePIDYawServo1(float YawErrorServo1) {
-
-        byte i;
-        float PIDValue;
-
-        Servo1_Yaw_Error[Servo1_Yaw_Current_i]=YawErrorServo1;
-        //Log.d("Servo1YaErrorCurrenti]",Float.toString(YawErrorServo1));
-
-
-        for (i=0;i<10;i++){
-            Servo1_Yaw_Accumulator += Math.round(Servo1_Yaw_Error[i]);
-        }
-
-        if(Servo1_Yaw_Current_i != 0) {
-            Servo1_Yaw_Delta = Servo1_Yaw_Error[Servo1_Yaw_Current_i] - Servo1_Yaw_Error[Servo1_Yaw_Current_i - 1];
-        }
-        else{
-            Servo1_Yaw_Delta = Servo1_Yaw_Error[Servo1_Yaw_Current_i] - Servo1_Yaw_Error[9];
-        }
-
-        Accum1.setText("Accum1:" + Float.toString(Servo1_Yaw_Accumulator+Servo1_Pitch_Accumulator));
-        PIDValue = (float) ((Servo1_Yaw_Error[Servo1_Yaw_Current_i] * Servo1_Yaw_PTerm) + (Servo1_Yaw_ITerm * Servo1_Yaw_Accumulator) + (Servo1_Yaw_DTerm * Servo1_Yaw_Delta));
-        //Log.d("YawPIDValue",Float.toString(PIDValue));
-
-        Servo1_Yaw_PMW_Output=PIDValue;
-        if(Servo1_Yaw_PMW_Output > 50) Servo1_Yaw_PMW_Output = 50;
-        if(Servo1_Yaw_PMW_Output < -50) Servo1_Yaw_PMW_Output = -50;
-
-        Servo1_Yaw_Current_i++;
-        if(Servo1_Yaw_Current_i > 9)Servo1_Yaw_Current_i=0;
+        ControlServoLogic.CalculatePIDYaw(Servo1,YawErrorServo1);
+        Accum1.setText("Accum1:" + Float.toString(Servo1.getYaw_Accumulator()+Servo1.getPitch_Accumulator()));
     }
 
     // PID Servo 2 function
-    public void CalculatePIDPitchServo2(float PitchErrorServo2) {
-
-        byte i;
-        float PIDValue;
-
-        Servo2_Pitch_Error[Servo2_Pitch_Current_i]=PitchErrorServo2;
-
-        for (i=0;i<10;i++){
-            Servo2_Pitch_Accumulator += Math.round(Servo2_Pitch_Error[i]);
-        }
-
-        if(Servo2_Pitch_Current_i != 0) {
-            Servo2_Pitch_Delta = Servo2_Pitch_Error[Servo2_Pitch_Current_i] - Servo2_Pitch_Error[Servo2_Pitch_Current_i - 1];
-        }
-        else{
-            Servo2_Pitch_Delta = Servo2_Pitch_Error[Servo2_Pitch_Current_i] - Servo2_Pitch_Error[9];
-        }
-
-        PIDValue = (float) ((Servo2_Pitch_Error[Servo2_Pitch_Current_i] * Servo2_Pitch_PTerm) + (Servo2_Pitch_ITerm * Servo2_Pitch_Accumulator) + (Servo2_Pitch_DTerm * Servo2_Pitch_Delta));
-
-        Servo2_Pitch_PMW_Output=PIDValue;
-        if(Servo2_Pitch_PMW_Output > 50) Servo2_Pitch_PMW_Output = 50;
-        if(Servo2_Pitch_PMW_Output < -50) Servo2_Pitch_PMW_Output = -50;
-
-        Servo2_Pitch_Current_i++;
-        if(Servo2_Pitch_Current_i > 9)Servo2_Pitch_Current_i=0;
+    public void CalculatePIDPitchServo2(float PitchError) {
+        ControlServoLogic.CalculatePIDPitch(Servo2, PitchError);
     }
 
     public void CalculatePIDYawServo2(float YawErrorServo2) {
-
-        byte i;
-        float PIDValue;
-
-        Servo2_Yaw_Error[Servo2_Yaw_Current_i]=YawErrorServo2;
-
-        for (i=0;i<10;i++){
-            Servo2_Yaw_Accumulator += Math.round(Servo2_Yaw_Error[i]);
-        }
-
-        if(Servo2_Yaw_Current_i != 0) {
-            Servo2_Yaw_Delta = Servo2_Yaw_Error[Servo2_Yaw_Current_i] - Servo2_Yaw_Error[Servo2_Yaw_Current_i - 1];
-        }
-        else{
-            Servo2_Yaw_Delta = Servo2_Yaw_Error[Servo2_Yaw_Current_i] - Servo2_Yaw_Error[9];
-        }
-
-        Accum2.setText("Accum2:" + Float.toString(Servo2_Yaw_Accumulator+Servo2_Pitch_Accumulator));
-
-        PIDValue = (float) (-1*((Servo2_Yaw_Error[Servo2_Yaw_Current_i] * Servo2_Yaw_PTerm) + (Servo2_Yaw_ITerm * Servo2_Yaw_Accumulator) + (Servo2_Yaw_DTerm * Servo2_Yaw_Delta)));
-
-        Servo2_Yaw_PMW_Output=PIDValue;
-        if(Servo2_Yaw_PMW_Output > 50) Servo2_Yaw_PMW_Output = 50;
-        if(Servo2_Yaw_PMW_Output < -50) Servo2_Yaw_PMW_Output = -50;
-
-        Servo2_Yaw_Current_i++;
-        if(Servo2_Yaw_Current_i > 9)Servo2_Yaw_Current_i=0;
+        ControlServoLogic.CalculatePIDYaw(Servo2,YawErrorServo2);
+        Accum2.setText("Accum2:" + Float.toString(Servo2.getYaw_Accumulator()+Servo2.getPitch_Accumulator()));
     }
 
     // PID Servo 3 function
     public void CalculatePIDPitchServo3(float PitchErrorServo3) {
-
-        byte i;
-        float PIDValue;
-
-        Servo3_Pitch_Error[Servo3_Pitch_Current_i]=PitchErrorServo3;
-
-        for (i=0;i<10;i++){
-            Servo3_Pitch_Accumulator += Math.round(Servo3_Pitch_Error[i]);
-        }
-
-        if(Servo3_Pitch_Current_i != 0) {
-            Servo3_Pitch_Delta = Servo3_Pitch_Error[Servo3_Pitch_Current_i] - Servo3_Pitch_Error[Servo3_Pitch_Current_i - 1];
-        }
-        else{
-            Servo3_Pitch_Delta = Servo3_Pitch_Error[Servo3_Pitch_Current_i] - Servo3_Pitch_Error[9];
-        }
-
-        PIDValue = (float) (-1*((Servo3_Pitch_Error[Servo3_Pitch_Current_i] * Servo3_Pitch_PTerm) + (Servo3_Pitch_ITerm * Servo3_Pitch_Accumulator) + (Servo3_Pitch_DTerm * Servo3_Pitch_Delta)));
-
-        Servo3_Pitch_PMW_Output=PIDValue;
-        if(Servo3_Pitch_PMW_Output > 50) Servo3_Pitch_PMW_Output = 50;
-        if(Servo3_Pitch_PMW_Output < -50) Servo3_Pitch_PMW_Output = -50;
-
-        Servo3_Pitch_Current_i++;
-        if(Servo3_Pitch_Current_i > 9)Servo3_Pitch_Current_i=0;
+        ControlServoLogic.CalculatePIDPitch(Servo3, PitchErrorServo3);
     }
 
     public void CalculatePIDYawServo3(float YawErrorServo3) {
-
-        byte i;
-        float PIDValue;
-
-        Servo3_Yaw_Error[Servo3_Yaw_Current_i]=YawErrorServo3;
-
-
-        for (i=0;i<10;i++){
-            Servo3_Yaw_Accumulator += Math.round(Servo3_Yaw_Error[i]);
-        }
-
-        if(Servo3_Yaw_Current_i != 0) {
-            Servo3_Yaw_Delta = Servo3_Yaw_Error[Servo3_Yaw_Current_i] - Servo3_Yaw_Error[Servo3_Yaw_Current_i - 1];
-        }
-        else{
-            Servo3_Yaw_Delta = Servo3_Yaw_Error[Servo3_Yaw_Current_i] - Servo3_Yaw_Error[9];
-        }
-
-        Accum3.setText("Accum3:" + Float.toString(Servo3_Yaw_Accumulator+Servo3_Pitch_Accumulator));
-
-        PIDValue = (float) ((Servo3_Yaw_Error[Servo3_Yaw_Current_i] * Servo3_Yaw_PTerm) + (Servo3_Yaw_ITerm * Servo3_Yaw_Accumulator) + (Servo3_Yaw_DTerm * Servo3_Yaw_Delta));
-
-        Servo3_Yaw_PMW_Output=PIDValue;
-        if(Servo3_Yaw_PMW_Output > 50) Servo3_Yaw_PMW_Output = 50;
-        if(Servo3_Yaw_PMW_Output < -50) Servo3_Yaw_PMW_Output = -50;
-
-        Servo3_Yaw_Current_i++;
-        if(Servo3_Yaw_Current_i > 9)Servo3_Yaw_Current_i=0;
+        ControlServoLogic.CalculatePIDYaw(Servo3,YawErrorServo3);
+        Accum3.setText("Accum3:" + Float.toString(Servo3.getYaw_Accumulator()+Servo3.getPitch_Accumulator()));
     }
 
     // PID Servo 4 function
     public void CalculatePIDPitchServo4(float PitchErrorServo4) {
-
-        byte i;
-        float PIDValue;
-
-        Servo4_Pitch_Error[Servo4_Pitch_Current_i]=PitchErrorServo4;
-
-        for (i=0;i<10;i++){
-            Servo4_Pitch_Accumulator += Math.round(Servo4_Pitch_Error[i]);
-        }
-
-        if(Servo4_Pitch_Current_i != 0) {
-            Servo4_Pitch_Delta = Servo4_Pitch_Error[Servo4_Pitch_Current_i] - Servo4_Pitch_Error[Servo4_Pitch_Current_i - 1];
-        }
-        else{
-            Servo4_Pitch_Delta = Servo4_Pitch_Error[Servo4_Pitch_Current_i] - Servo4_Pitch_Error[9];
-        }
-
-        PIDValue = (float) (-1*((Servo4_Pitch_Error[Servo4_Pitch_Current_i] * Servo4_Pitch_PTerm) + (Servo4_Pitch_ITerm * Servo4_Pitch_Accumulator) + (Servo4_Pitch_DTerm * Servo4_Pitch_Delta)));
-
-        Servo4_Pitch_PMW_Output=PIDValue;
-        if(Servo4_Pitch_PMW_Output > 50) Servo4_Pitch_PMW_Output = 50;
-        if(Servo4_Pitch_PMW_Output < -50) Servo4_Pitch_PMW_Output = -50;
-
-        Servo4_Pitch_Current_i++;
-        if(Servo4_Pitch_Current_i > 9)Servo4_Pitch_Current_i=0;
+        ControlServoLogic.CalculatePIDPitch(Servo4,PitchErrorServo4);
     }
 
     public void CalculatePIDYawServo4(float YawErrorServo4) {
-
-        byte i;
-        float PIDValue;
-
-        Servo4_Yaw_Error[Servo4_Yaw_Current_i]=YawErrorServo4;
-
-        for (i=0;i<10;i++){
-            Servo4_Yaw_Accumulator += Math.round(Servo4_Yaw_Error[i]);
-        }
-
-        if(Servo4_Yaw_Current_i != 0) {
-            Servo4_Yaw_Delta = Servo4_Yaw_Error[Servo4_Yaw_Current_i] - Servo4_Yaw_Error[Servo4_Yaw_Current_i - 1];
-        }
-        else{
-            Servo4_Yaw_Delta = Servo4_Yaw_Error[Servo4_Yaw_Current_i] - Servo4_Yaw_Error[9];
-        }
-
-        Accum4.setText("Accum4:" + Float.toString(Servo4_Yaw_Accumulator+Servo4_Pitch_Accumulator));
-
-        PIDValue = (float) (-1*((Servo4_Yaw_Error[Servo4_Yaw_Current_i] * Servo4_Yaw_PTerm) + (Servo4_Yaw_ITerm * Servo4_Yaw_Accumulator) + (Servo4_Yaw_DTerm * Servo4_Yaw_Delta)));
-
-        Servo4_Yaw_PMW_Output=PIDValue;
-        if(Servo4_Yaw_PMW_Output > 50) Servo4_Yaw_PMW_Output = 50;
-        if(Servo4_Yaw_PMW_Output < -50) Servo4_Yaw_PMW_Output = -50;
-
-        Servo4_Yaw_Current_i++;
-        if(Servo4_Yaw_Current_i > 9)Servo4_Yaw_Current_i=0;
+        ControlServoLogic.CalculatePIDYaw(Servo4,YawErrorServo4);
+        Accum4.setText("Accum4:" + Float.toString(Servo4.getYaw_Accumulator()+Servo4.getPitch_Accumulator()));
     }
 
 public void appendLog(String text)

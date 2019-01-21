@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="edu.und.beuning.john.uav_remote.MainActivity">
+    tools:context="edu.und.seau.UI.MainActivity">
 
     <ListView
         android:layout_width="wrap_content"

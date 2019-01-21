@@ -1,9 +1,8 @@
-package edu.und.beuning.john.uav_remote;
+package edu.und.seau.UI;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,16 +17,14 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
-//import com.felhr.usbserial.UsbSerialDevice;
+import androidx.appcompat.app.AppCompatActivity;
+import edu.und.seau.uav_remote.R;
 
 public class MainActivity extends AppCompatActivity {
 
 
-
-    private ListView listView;
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_UAVs = new ArrayList<>();
     private final String name="REMOTE";
@@ -54,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(LOCATION_PERMS, LOCATION_REQUEST);
         }
 
-        listView = (ListView) findViewById(R.id.listView);
+        ListView listView = findViewById(R.id.listView);
 
-        arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list_of_UAVs);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list_of_UAVs);
 
         listView.setAdapter(arrayAdapter);
 
@@ -65,11 +62,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Set<String> set = new HashSet<String>();
-                Iterator i = dataSnapshot.getChildren().iterator();
+                Set<String> set = new HashSet<>();
 
-                while (i.hasNext()){
-                    set.add(((DataSnapshot)i.next()).getKey());
+                for (DataSnapshot o : dataSnapshot.getChildren()) {
+                    set.add((o).getKey());
                 }
 
                 list_of_UAVs.clear();
@@ -79,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled( DatabaseError databaseError) {
 
             }
         });
@@ -88,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Intent intent = new Intent(getApplicationContext(),control_screen.class);
+                Intent intent = new Intent(getApplicationContext(), control_screen.class);
                 intent.putExtra("UAV_name",((TextView)view).getText().toString() );
                 intent.putExtra("user_name",name);
                 startActivity(intent);
