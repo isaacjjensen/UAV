@@ -1,4 +1,4 @@
-package edu.und.seau.uav_remote;
+package edu.und.seau.uav;
 
 import org.junit.Test;
 

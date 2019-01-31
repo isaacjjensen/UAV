@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -20,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
-import edu.und.seau.uav_remote.R;
+import edu.und.seau.uav.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_UAVs = new ArrayList<>();
     private final String name="REMOTE";
-    private DatabaseReference root = FirebaseDatabase.getInstance().getReference().getRoot();
+    private DatabaseReference root;
 
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        root = FirebaseDatabase.getInstance().getReference().getRoot();
         setContentView(R.layout.activity_main);
 
         if (!canAccessLocation()) {

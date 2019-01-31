@@ -41,7 +41,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:342133585937:android:783e0c3582f9dcec",
         "android_client_info": {
-          "package_name": "edu.und.seau.uav_remote"
+          "package_name": "edu.und.seau.uav"
         }
       },
       "oauth_client": [

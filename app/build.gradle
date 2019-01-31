@@ -5,7 +5,7 @@ android {
     buildToolsVersion "28.0.3"
 
     defaultConfig {
-        applicationId "edu.und.seau.uav_remote"
+        applicationId "edu.und.seau.uav"
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
@@ -24,7 +24,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'androidx.appcompat:appcompat:1.0.2'
 
-    implementation 'com.google.firebase:firebase-database:16.0.5'
+    implementation 'com.google.firebase:firebase-database:16.0.6'
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 

@@ -46,7 +46,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import edu.und.seau.lib.UAV.logic.ControlServoLogic;
 import edu.und.seau.lib.UAV.objects.ControlServo;
-import edu.und.seau.uav_remote.R;
+import edu.und.seau.uav.R;
 
 
 public class control_screen extends AppCompatActivity implements SensorEventListener {
