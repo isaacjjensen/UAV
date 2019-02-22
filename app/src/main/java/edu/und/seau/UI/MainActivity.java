@@ -1,5 +1,6 @@
 package edu.und.seau.UI;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -36,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
 
     //Main Function
 
+    private static final String[] WRITE_PERMS={
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+    private static final int WRITE_REQUEST=1337;
 
     private static final String[] LOCATION_PERMS={
             android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -48,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         root = FirebaseDatabase.getInstance().getReference().getRoot();
         setContentView(R.layout.activity_main);
+
+        if (!canWriteExternal()) {
+            requestPermissions(WRITE_PERMS, WRITE_REQUEST);
+        }
 
         if (!canAccessLocation()) {
             requestPermissions(LOCATION_PERMS, LOCATION_REQUEST);
@@ -92,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private boolean canWriteExternal() {
+        return(hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE));
     }
 
     private boolean canAccessLocation() {

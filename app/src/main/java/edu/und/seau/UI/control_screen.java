@@ -54,6 +54,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 
     //Flight Variables
     private String control_command, UAV_Pilot_name;
+    private final String TAG = "UAV Control Screen";
 
     // TextView Variables
     private TextView Roll;
@@ -201,7 +202,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                             serialPort.read(mCallback);
                             USBStatus.setText("Serial Connection Opened!\n");
                             usb_is_connected = true;
-
+                            Log.d("SERIAL", "Serial connection is open");
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
                         }
@@ -223,7 +224,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         InitializeServoSettings();
-
+        Log.d(TAG, "at onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.control_screen);
 
@@ -388,7 +389,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
             byte j;
             Log.d("D","CMD = "+ cmd);
             switch (cmd) {
-
+            // Each case is based on the ASCII value of a symbol listed above each case
+                // OO (oh oh)
                 case 79:
                     Log.d("R:", "Center");
                     // Firebase Code
@@ -401,7 +403,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Center");
                     break;
-
+                // PP
                 case 80:
                     Log.d("R:", "Land");
                     // Firebase Code
@@ -427,29 +429,30 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     }
 
                     break;
-
-                case 81:
-                    Log.d("R:", "E-Stop");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-
-                    for(int k=0;k<4;k++){
-                        Servo_Arr2[k] = -50;
-                    }
-
-                    Log.d("Serial Data", Arrays.toString(Servo_Arr2));
-
-                    if (usb_is_connected) {
-                        serialPort.write(Servo_Arr2);
-                        USBData.setText("Serial Data Sent : E-Stop");
-                    }
-
-                    serialPort.close();
-                    System.exit(0);
-                    break;
-
+                // This should be avoided at all costs as System.exit is a HORRIBLE idea
+                // QQ
+//                case 81:
+//                    Log.d("R:", "E-Stop");
+//                    // Firebase Code
+//                    map.put("name", user_name);
+//                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
+//                    message_root.updateChildren(map);
+//
+//                    for(int k=0;k<4;k++){
+//                        Servo_Arr2[k] = -50;
+//                    }
+//
+//                    Log.d("Serial Data", Arrays.toString(Servo_Arr2));
+//
+//                    if (usb_is_connected) {
+//                        serialPort.write(Servo_Arr2);
+//                        USBData.setText("Serial Data Sent : E-Stop");
+//                    }
+//
+//                    serialPort.close();
+//                    System.exit(0);
+//                    break;
+                // aa
                 case 97:
                     Log.d("R:", "Up 25%");
                     // Firebase Code
@@ -465,7 +468,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // RR
                 case 82:
                     Log.d("R:", "Up 2.5%");
                     // Firebase Code
@@ -480,7 +483,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // SS
                 case 83:
                     Log.d("R:", "Down 2.5%");
                     // Firebase Code
@@ -496,7 +499,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // bb
                 case 98:
                     Log.d("R:", "Up 50%");
                     // Firebase Code
@@ -512,7 +515,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // cc
                 case 99:
                     Log.d("R:", "Up 75%");
                     // Firebase Code
@@ -528,7 +531,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // dd
                 case 100:
                     Log.d("R:", "Up 100%");
                     // Firebase Code
@@ -544,7 +547,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
                     break;
-
+                // ee
                 case 101:
                     Log.d("R:", "Down 25%");
                     // Firebase Code
@@ -559,7 +562,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Down");
                     break;
-
+                // ff
                 case 102:
                     Log.d("R:", "Down 50%");
                     // Firebase Code
@@ -574,7 +577,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Down");
                     break;
-
+                // gg
                 case 103:
                     Log.d("R:", "Down 75%");
                     // Firebase Code
@@ -589,7 +592,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Down");
                     break;
-
+                // hh
                 case 104:
                     Log.d("R:", "Down 100%");
                     // Firebase Code
@@ -604,7 +607,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Down");
                     break;
-
+                // qq
                 case 113:
                     Log.d("R:", "Left 25%");
                     // Firebase Code
@@ -617,7 +620,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Left");
                     break;
-
+                // rr
                 case 114:
                     Log.d("R:", "Left 50%");
                     // Firebase Code
@@ -630,7 +633,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 5;
                     MotorControl.setText("Set Point = Left");
                     break;
-
+                // ss
                 case 115:
                     Log.d("R:", "Left 75%");
                     // Firebase Code
@@ -643,7 +646,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Left");
                     break;
-
+                // tt
                 case 116:
                     Log.d("R:", "Left 100%");
                     // Firebase Code
@@ -656,7 +659,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 10;
                     MotorControl.setText("Set Point = Left");
                     break;
-
+                // uu
                 case 117:
                     Log.d("R:", "Right 25%");
                     // Firebase Code
@@ -669,7 +672,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Right");
                     break;
-
+                // vv
                 case 118:
                     Log.d("R:", "Right 50%");
                     // Firebase Code
@@ -682,7 +685,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -5;
                     MotorControl.setText("Set Point = Right");
                     break;
-
+                // ww
                 case 119:
                     Log.d("R:", "Right 75%");
                     // Firebase Code
@@ -695,7 +698,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Right");
                     break;
-
+                // xx
                 case 120:
                     Log.d("R:", "Right 100%");
                     // Firebase Code
@@ -708,7 +711,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -10;
                     MotorControl.setText("Set Point = Right");
                     break;
-
+                // ii
                 case 105:
                     Log.d("R:", "Forward 25%");
                     // Firebase Code
@@ -721,7 +724,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Forward");
                     break;
-
+                // jj
                 case 106:
                     Log.d("R:", "Forward 50%");
                     // Firebase Code
@@ -734,7 +737,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 5;
                     MotorControl.setText("Set Point = Forward");
                     break;
-
+                // kk
                 case 107:
                     Log.d("R:", "Forward 75%");
                     // Firebase Code
@@ -747,7 +750,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Forward");
                     break;
-
+                // ll
                 case 108:
                     Log.d("R:", "Forward 100%");
                     // Firebase Code
@@ -760,7 +763,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= 10;
                     MotorControl.setText("Set Point = Forward");
                     break;
-
+                // mm
                 case 109:
                     Log.d("R:", "Backward 25%");
                     // Firebase Code
@@ -773,8 +776,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Backward");
                     break;
-
-                case 15:
+                // hold up
+                case 110:
                     Log.d("R:", "Backward 50%");
                     // Firebase Code
                     map.put("name", user_name);
@@ -786,7 +789,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -5;
                     MotorControl.setText("Set Point = Backward");
                     break;
-
+                // oo
                 case 111:
                     Log.d("R:", "Backward 75%");
                     // Firebase Code
@@ -799,7 +802,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Backward");
                     break;
-
+                // pp
                 case 112:
                     Log.d("R:", "Backward 100 %");
                     // Firebase Code
@@ -812,7 +815,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationPitch_Array[3]= -10;
                     MotorControl.setText("Set Point = Backward");
                     break;
-
+                // yy
                 case 121:
                     Log.d("R:", "Forward Left 25%");
                     // Firebase Code
@@ -829,7 +832,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
-
+                // zz
                 case 122:
                     Log.d("R:", "Forward Left 50%");
                     // Firebase Code
@@ -846,7 +849,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 5;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
-
+                // {{....
                 case 123:
                     Log.d("R:", "Forward Left 75%");
                     // Firebase Code
@@ -863,7 +866,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
-
+                // ||....
                 case 124:
                     Log.d("R:", "Forward Left 100%");
                     // Firebase Code
@@ -880,7 +883,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 10;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
-
+                // CC
                 case 67:
                     Log.d("R:", "Forward Right");
                     // Firebase Code
@@ -897,7 +900,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
-
+                // DD
                 case 68:
                     Log.d("R:", "Forward Right 50%");
                     // Firebase Code
@@ -914,7 +917,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
-
+                // EE
                 case 69:
                     Log.d("R:", "Forward Right 75%");
                     // Firebase Code
@@ -931,7 +934,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
-
+                // FF
                 case 70:
                     Log.d("R:", "Forward Right 100%");
                     // Firebase Code
@@ -948,7 +951,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
-
+                // GG
                 case 71:
                     Log.d("R:", "Backward Left 25%");
                     // Firebase Code
@@ -965,7 +968,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Backward Left");
                     break;
-
+                // HH
                 case 72:
                     Log.d("R:", "Backward Left 50%");
                     // Firebase Code
@@ -983,7 +986,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
-
+                // II
                 case 73:
                     Log.d("R:", "Backward Left 75%");
                     // Firebase Code
@@ -1001,7 +1004,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
-
+                // JJ
                 case 74:
                     Log.d("R:", "Backward Left 100%");
                     // Firebase Code
@@ -1019,7 +1022,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
-
+                // KK
                 case 75:
                     Log.d("R:", "Backward Right 25%");
                     // Firebase Code
@@ -1036,7 +1039,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
-
+                // LL
                 case 76:
                     Log.d("R:", "Backward Right 50%");
                     // Firebase Code
@@ -1053,7 +1056,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= -5;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
-
+                // MM
                 case 77:
                     Log.d("R:", "Backward Right 75%");
                     // Firebase Code
@@ -1070,7 +1073,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     DesiredOrientationYaw_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
-
+                // NN
                 case 78:
                     Log.d("R:", "Backward Right 100%");
                     // Firebase Code
@@ -1142,7 +1145,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         if ((str_arr[0]).equals(str_arr[1])) {
             byte[] return_arr = str_arr[0].getBytes();
             rc = return_arr[0];
-            //Log.d("R:", "Command returned = " + rc);
+            Log.d("Check Error", "Command returned = " + rc);
             return rc;
         } else {
             //Log.d("R:", "Command had length of 2 but strings not equal");
@@ -1207,10 +1210,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         for (byte j = 0; j < 4; j++) {
             Servo_Arr2[j] = chk_min_max_speed(Servo_Arr2[j]);
         } // Check for min and max servo speed
-        TextView_Servo1.setText("TextView_Servo1%:" + Servo_Arr2[0]);
-        TextView_Servo2.setText("TextView_Servo2%:" + Servo_Arr2[1]);
-        TextView_Servo3.setText("TextView_Servo3%:" + Servo_Arr2[2]);
-        TextView_Servo4.setText("TextView_Servo4%:" + Servo_Arr2[3]);
+        TextView_Servo1.setText("Servo1: %" + Servo_Arr2[0]);
+        TextView_Servo2.setText("Servo2: %" + Servo_Arr2[1]);
+        TextView_Servo3.setText("Servo3: %" + Servo_Arr2[2]);
+        TextView_Servo4.setText("Servo4: %" + Servo_Arr2[3]);
         if (usb_is_connected) serialPort.write(Servo_Arr2);
         //USBData.setText("Serial Data Sent From Gyro");
 
@@ -1257,56 +1260,57 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 
     // PID Servo 1 function
     public void CalculatePIDPitchServo1(float PitchErrorServo1) {
-
-        byte i;
-        float PIDValue;
-        float pitchError = 0.0f;
-        float pitchDelta;
-        float pitchPWMOutput;
-
-        float[] servo1PitchError = Servo1.getPitch_Error();
-        servo1PitchError[Servo1.getPitch_Current_i()] = PitchErrorServo1;
-        Servo1.setPitch_Error(servo1PitchError);
-
-        //Log.d("Servo1PiErrorCurrenti]",Float.toString(PitchErrorServo1));
-
-
-        for (i=0;i<10;i++){
-            pitchError += Math.round(Servo1.getPitch_ErrorIndex(i));
-        }
-        Servo1.setPitch_Accumulator(Servo1.getPitch_Accumulator() + pitchError);
-
-
-        pitchDelta = Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i())-Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i() -1);
-        Servo1.setPitch_Delta(pitchDelta);
-
-        PIDValue = (float) ((Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i()) * Servo1.getPitch_PTerm()) + (Servo1.getPitch_ITerm() * Servo1.getPitch_Accumulator()) + (Servo1.getPitch_DTerm() * Servo1.getPitch_Delta()));
-        //Log.d("PitchPIDValue",Float.toString(PIDValue));
-
-        pitchPWMOutput = PIDValue;
-        pitchPWMOutput = Math.min(pitchPWMOutput,50);
-        pitchPWMOutput = Math.max(pitchPWMOutput,-50);
-        Servo1.setPitch_PMW_Output(pitchPWMOutput);
-
-        Servo1.setPitch_Current_i(Servo1.getPitch_Current_i() + 1);
-
-
-        /*s
-        for(i=0;i<10;i++) {
-            Servo1_Pitch_Error[i + 1] = Servo1_Pitch_Error[i];
-            Servo1_Pitch_Error[0] = -1*(DesiredOrientationPitch_Array[0] - PitchErrorServo1);}
-
-        for (float j : Servo1_Pitch_Error) {
-            Servo1_Pitch_Accumulator += Math.round(j);}
-
-        PIDValue = (Servo1_Pitch_Error[0] * Servo1_Pitch_PTerm) + ((Servo1_Pitch_ITerm * Servo1_Pitch_Accumulator)) + (Servo1_Pitch_DTerm * ((Servo1_Pitch_Error[0] - Servo1_Pitch_Error[9])));
-
-        Servo1_Pitch_PMW_Output=PIDValue;
-        if(Servo1_Pitch_PMW_Output > 50) Servo1_Pitch_PMW_Output = 50;
-        if(Servo1_Pitch_PMW_Output < -50) Servo1_Pitch_PMW_Output = -50;
-
-        Servo1_Pitch_Accumulator=0;
-        */
+        ControlServoLogic.CalculatePIDPitch(Servo1, PitchErrorServo1);
+//
+//        byte i;
+//        float PIDValue;
+//        float pitchError = 0.0f;
+//        float pitchDelta;
+//        float pitchPWMOutput;
+//
+//        float[] servo1PitchError = Servo1.getPitch_Error();
+//        servo1PitchError[Servo1.getPitch_Current_i()] = PitchErrorServo1;
+//        Servo1.setPitch_Error(servo1PitchError);
+//
+//        //Log.d("Servo1PiErrorCurrenti]",Float.toString(PitchErrorServo1));
+//
+//
+//        for (i=0;i<10;i++){
+//            pitchError += Math.round(Servo1.getPitch_ErrorIndex(i));
+//        }
+//        Servo1.setPitch_Accumulator(Servo1.getPitch_Accumulator() + pitchError);
+//
+//
+//        pitchDelta = Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i())-Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i() -1);
+//        Servo1.setPitch_Delta(pitchDelta);
+//
+//        PIDValue = (float) ((Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i()) * Servo1.getPitch_PTerm()) + (Servo1.getPitch_ITerm() * Servo1.getPitch_Accumulator()) + (Servo1.getPitch_DTerm() * Servo1.getPitch_Delta()));
+//        //Log.d("PitchPIDValue",Float.toString(PIDValue));
+//
+//        pitchPWMOutput = PIDValue;
+//        pitchPWMOutput = Math.min(pitchPWMOutput,50);
+//        pitchPWMOutput = Math.max(pitchPWMOutput,-50);
+//        Servo1.setPitch_PMW_Output(pitchPWMOutput);
+//
+//        Servo1.setPitch_Current_i(Servo1.getPitch_Current_i() + 1);
+//
+//
+//        /*s
+//        for(i=0;i<10;i++) {
+//            Servo1_Pitch_Error[i + 1] = Servo1_Pitch_Error[i];
+//            Servo1_Pitch_Error[0] = -1*(DesiredOrientationPitch_Array[0] - PitchErrorServo1);}
+//
+//        for (float j : Servo1_Pitch_Error) {
+//            Servo1_Pitch_Accumulator += Math.round(j);}
+//
+//        PIDValue = (Servo1_Pitch_Error[0] * Servo1_Pitch_PTerm) + ((Servo1_Pitch_ITerm * Servo1_Pitch_Accumulator)) + (Servo1_Pitch_DTerm * ((Servo1_Pitch_Error[0] - Servo1_Pitch_Error[9])));
+//
+//        Servo1_Pitch_PMW_Output=PIDValue;
+//        if(Servo1_Pitch_PMW_Output > 50) Servo1_Pitch_PMW_Output = 50;
+//        if(Servo1_Pitch_PMW_Output < -50) Servo1_Pitch_PMW_Output = -50;
+//
+//        Servo1_Pitch_Accumulator=0;
+//        */
 
     }
 
@@ -1316,8 +1320,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     }
 
     // PID Servo 2 function
-    public void CalculatePIDPitchServo2(float PitchError) {
-        ControlServoLogic.CalculatePIDPitch(Servo2, PitchError);
+    public void CalculatePIDPitchServo2(float PitchErrorServo2) {
+        ControlServoLogic.CalculatePIDPitch(Servo2, PitchErrorServo2);
     }
 
     public void CalculatePIDYawServo2(float YawErrorServo2) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:keepScreenOn="true">
     <ScrollView
@@ -15,11 +16,13 @@
         android:fillViewport="true">
 
         <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
-            android:padding="15dp"
             android:layout_height="match_parent"
+            android:padding="15dp"
+            android:textAllCaps="false"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/textView" />
+            android:textColor="@color/colorAccent" />
     </ScrollView>
 
     <TextView
@@ -68,7 +71,8 @@
         android:textIsSelectable="true"
         android:textStyle="bold"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"></TextView>
+        android:layout_centerHorizontal="true">
+    </TextView>
 
     <TextView
         android:text="TextView"
