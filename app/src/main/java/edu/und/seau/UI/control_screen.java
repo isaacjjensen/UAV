@@ -1133,6 +1133,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     }
 
     // Checks for errors in control command sent from host
+    // This is weird
     public static int check_for_err(String cmd) {
 
         String[] str_arr = cmd.split("(?!^)");
