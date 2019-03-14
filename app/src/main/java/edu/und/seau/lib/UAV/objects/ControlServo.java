@@ -49,7 +49,7 @@ public class ControlServo {
         return Pitch_Error;
     }
 
-    public float getPitch_ErrorIndex(int index)
+    public float getPitch_Error_Index(int index)
     {
         index = index % Pitch_Error.length;
         if(index < 0)
@@ -159,7 +159,7 @@ public class ControlServo {
         Yaw_Error = yaw_Error;
     }
 
-    public void setYaw_ErrorIndex(int index, float yaw_Error)
+    public void setYaw_Error_Index(int index, float yaw_Error)
     {
         index %= Yaw_Error.length;
         if(index < 0)
@@ -209,7 +209,7 @@ public class ControlServo {
     private float Yaw_PMW_Output;
 
     public float getYaw_PMW_Output() {
-        return PWM_Output;
+        return Yaw_PMW_Output;
     }
 
     public void setYaw_PMW_Output(float yaw_PMW_Output) {

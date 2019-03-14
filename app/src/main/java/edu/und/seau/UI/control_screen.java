@@ -51,7 +51,6 @@ import edu.und.seau.uav.R;
 
 public class control_screen extends AppCompatActivity implements SensorEventListener {
 
-
     //Flight Variables
     private String control_command, UAV_Pilot_name;
     private final String TAG = "UAV Control Screen";
@@ -81,8 +80,11 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     boolean is_uav_taking_off = false;
     public byte[] Servo_Arr = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
     public byte[] Servo_Arr2 = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
-    public float[] DesiredOrientationPitch_Array = {0, 0, 0, 0};  // { Front Left, Front Right, Back Left, Back Right }
-    public float[] DesiredOrientationYaw_Array = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
+//    public float[] DesiredOrientationPitch_Array = {0, 0, 0, 0};  // { Front Left, Front Right, Back Left, Back Right }
+//    public float[] DesiredOrientationYaw_Array = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
+    public float desiredPitch = 0.0f;
+    public float desiredYaw = 0.0f;
+    public float desiredRoll = 0.0f;
 
 
     public ControlServo Servo1;
@@ -102,7 +104,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo1.setPitch_PTerm(.75);
         Servo1.setPitch_ITerm(.0001);
         Servo1.setPitch_DTerm((.95));
-        Servo1.setYaw_PTerm(.075);
+        Servo1.setYaw_PTerm(.75);
         Servo1.setYaw_ITerm(.0001);
         Servo1.setYaw_DTerm(.95);
 
@@ -110,10 +112,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo2 = new ControlServo();
         Servo2.setPitch_PTerm(.75);
         Servo2.setPitch_ITerm(.0001);
-        Servo2.setPitch_DTerm(.5);
-        Servo2.setYaw_DTerm(.5);
         Servo2.setPitch_DTerm((.95));
-        Servo2.setYaw_PTerm(.075);
+        Servo2.setYaw_PTerm(.75);
         Servo2.setYaw_ITerm(.0001);
         Servo2.setYaw_DTerm(.95);
 
@@ -122,7 +122,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo3.setPitch_PTerm(.75);
         Servo3.setPitch_ITerm(.0001);
         Servo3.setPitch_DTerm((.95));
-        Servo3.setYaw_PTerm(.075);
+        Servo3.setYaw_PTerm(.75);
         Servo3.setYaw_ITerm(.0001);
         Servo3.setYaw_DTerm(.95);
 
@@ -131,7 +131,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo4.setPitch_PTerm(.75);
         Servo4.setPitch_ITerm(.0001);
         Servo4.setPitch_DTerm((.95));
-        Servo4.setYaw_PTerm(.075);
+        Servo4.setYaw_PTerm(.75);
         Servo4.setYaw_ITerm(.0001);
         Servo4.setYaw_DTerm(.95);
 
@@ -213,10 +213,11 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     Log.d("SERIAL", "PERM NOT GRANTED");
                 }
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
+                Log.d("SERIAL", "onClickStart button pressed");
                 onClickStart(startButton);
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
+                Log.d("SERIAL", "onClickStop button pressed");
                 onClickStop(stopButton);
-
             }
         }
     };
@@ -293,7 +294,6 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(broadcastReceiver, filter);
 
-
         // InitializeServoSettings Text Vars
         chat_conversation = findViewById(R.id.textView);
         USBData = findViewById(R.id.usb_data);
@@ -338,7 +338,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener); // (type, refresh time (ms), distance needed for change (m), pointer)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0, locationListener); // (type, refresh time (ms), distance needed for change (m), pointer)
 
 
     }
@@ -391,19 +391,23 @@ public class control_screen extends AppCompatActivity implements SensorEventList
             switch (cmd) {
             // Each case is based on the ASCII value of a symbol listed above each case
                 // OO (oh oh)
+                // PITCH 0 : YAW 0
                 case 79:
                     Log.d("R:", "Center");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= 0;
+                    desiredPitch = 0.0f;
+                    desiredYaw = 0.0f;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Center");
                     break;
                 // PP
+                // PITCH 0 : YAW 0
                 case 80:
                     Log.d("R:", "Land");
                     // Firebase Code
@@ -412,6 +416,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     message_root.updateChildren(map);
                     // USB Code
                     //wait_in_milli(1000);
+                    desiredPitch = 0.0f;
+                    desiredYaw = 0.0f;
 
 
                     while(Servo_Arr[0] != 0 && Servo_Arr[1] != 0 && Servo_Arr[2] != 0 && Servo_Arr[2] !=0) {
@@ -453,17 +459,20 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 //                    System.exit(0);
 //                    break;
                 // aa
+                // PITCH 0 : YAW 0
                 case 97:
                     Log.d("R:", "Up 25%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
+                    desiredPitch = 0.0f;
+                    desiredYaw = 0.0f;
 
                     // USB Code
                     for (j = 0; j < 4; j++) {
                         Servo_Arr[j] += 10; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
+                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90
                     }
                     if (usb_is_connected) serialPort.write(Servo_Arr2);
                     USBData.setText("Serial Data Sent : Up");
@@ -548,12 +557,15 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     USBData.setText("Serial Data Sent : Up");
                     break;
                 // ee
+                // PITCH 0 : YAW 0
                 case 101:
                     Log.d("R:", "Down 25%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
+                    desiredPitch = 0.0f;
+                    desiredYaw = 0.0f;
                     // USB Code
                     for (j = 0; j < 4; j++) {
                         Servo_Arr[j] -= 10; // decrease all servo speeds
@@ -614,23 +626,26 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5/2;
-                    DesiredOrientationPitch_Array[1]= 5/2;
-                    DesiredOrientationPitch_Array[2]= -5/2;
-                    DesiredOrientationPitch_Array[3]= 5/2;
+//                    DesiredOrientationPitch_Array[0]= -5/2;
+//                    DesiredOrientationPitch_Array[1]= 5/2;
+//                    DesiredOrientationPitch_Array[2]= -5/2;
+//                    DesiredOrientationPitch_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Left");
                     break;
                 // rr
+                // PITCH 0 : YAW 15
                 case 114:
                     Log.d("R:", "Left 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5;
-                    DesiredOrientationPitch_Array[1]= 5;
-                    DesiredOrientationPitch_Array[2]= -5;
-                    DesiredOrientationPitch_Array[3]= 5;
+                    desiredPitch = 0.0f;
+                    desiredYaw = 15.0f;
+//                    DesiredOrientationPitch_Array[0]= -5;
+//                    DesiredOrientationPitch_Array[1]= 5;
+//                    DesiredOrientationPitch_Array[2]= -5;
+//                    DesiredOrientationPitch_Array[3]= 5;
                     MotorControl.setText("Set Point = Left");
                     break;
                 // ss
@@ -640,10 +655,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -15/2;
-                    DesiredOrientationPitch_Array[1]= 15/2;
-                    DesiredOrientationPitch_Array[2]= -15/2;
-                    DesiredOrientationPitch_Array[3]= 15/2;
+//                    DesiredOrientationPitch_Array[0]= -15/2;
+//                    DesiredOrientationPitch_Array[1]= 15/2;
+//                    DesiredOrientationPitch_Array[2]= -15/2;
+//                    DesiredOrientationPitch_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Left");
                     break;
                 // tt
@@ -653,10 +668,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -10;
-                    DesiredOrientationPitch_Array[1]= 10;
-                    DesiredOrientationPitch_Array[2]= -10;
-                    DesiredOrientationPitch_Array[3]= 10;
+//                    DesiredOrientationPitch_Array[0]= -10;
+//                    DesiredOrientationPitch_Array[1]= 10;
+//                    DesiredOrientationPitch_Array[2]= -10;
+//                    DesiredOrientationPitch_Array[3]= 10;
                     MotorControl.setText("Set Point = Left");
                     break;
                 // uu
@@ -666,23 +681,26 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5/2;
-                    DesiredOrientationPitch_Array[1]= -5/2;
-                    DesiredOrientationPitch_Array[2]= 5/2;
-                    DesiredOrientationPitch_Array[3]= -5/2;
+//                    DesiredOrientationPitch_Array[0]= 5/2;
+//                    DesiredOrientationPitch_Array[1]= -5/2;
+//                    DesiredOrientationPitch_Array[2]= 5/2;
+//                    DesiredOrientationPitch_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Right");
                     break;
                 // vv
+                // PITCH 0 : YAW -15
                 case 118:
                     Log.d("R:", "Right 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5;
-                    DesiredOrientationPitch_Array[1]= -5;
-                    DesiredOrientationPitch_Array[2]= 5;
-                    DesiredOrientationPitch_Array[3]= -5;
+                    desiredPitch = 0.0f;
+                    desiredYaw = -15.0f;
+//                    DesiredOrientationPitch_Array[0]= 5;
+//                    DesiredOrientationPitch_Array[1]= -5;
+//                    DesiredOrientationPitch_Array[2]= 5;
+//                    DesiredOrientationPitch_Array[3]= -5;
                     MotorControl.setText("Set Point = Right");
                     break;
                 // ww
@@ -692,10 +710,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 15/2;
-                    DesiredOrientationPitch_Array[1]= -15/2;
-                    DesiredOrientationPitch_Array[2]= 15/2;
-                    DesiredOrientationPitch_Array[3]= -15/2;
+//                    DesiredOrientationPitch_Array[0]= 15/2;
+//                    DesiredOrientationPitch_Array[1]= -15/2;
+//                    DesiredOrientationPitch_Array[2]= 15/2;
+//                    DesiredOrientationPitch_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Right");
                     break;
                 // xx
@@ -705,10 +723,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 10;
-                    DesiredOrientationPitch_Array[1]= -10;
-                    DesiredOrientationPitch_Array[2]= 10;
-                    DesiredOrientationPitch_Array[3]= -10;
+//                    DesiredOrientationPitch_Array[0]= 10;
+//                    DesiredOrientationPitch_Array[1]= -10;
+//                    DesiredOrientationPitch_Array[2]= 10;
+//                    DesiredOrientationPitch_Array[3]= -10;
                     MotorControl.setText("Set Point = Right");
                     break;
                 // ii
@@ -718,23 +736,26 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5/2;
-                    DesiredOrientationPitch_Array[1]= -5/2;
-                    DesiredOrientationPitch_Array[2]= 5/2;
-                    DesiredOrientationPitch_Array[3]= 5/2;
+//                    DesiredOrientationPitch_Array[0]= -5/2;
+//                    DesiredOrientationPitch_Array[1]= -5/2;
+//                    DesiredOrientationPitch_Array[2]= 5/2;
+//                    DesiredOrientationPitch_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Forward");
                     break;
                 // jj
+                // PITCH 15 : YAW 0
                 case 106:
                     Log.d("R:", "Forward 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5;
-                    DesiredOrientationPitch_Array[1]= -5;
-                    DesiredOrientationPitch_Array[2]= 5;
-                    DesiredOrientationPitch_Array[3]= 5;
+                    desiredPitch = 15.0f;
+                    desiredYaw = 0.0f;
+//                    DesiredOrientationPitch_Array[0]= -5;
+//                    DesiredOrientationPitch_Array[1]= -5;
+//                    DesiredOrientationPitch_Array[2]= 5;
+//                    DesiredOrientationPitch_Array[3]= 5;
                     MotorControl.setText("Set Point = Forward");
                     break;
                 // kk
@@ -744,10 +765,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -15/2;
-                    DesiredOrientationPitch_Array[1]= -15/2;
-                    DesiredOrientationPitch_Array[2]= 15/2;
-                    DesiredOrientationPitch_Array[3]= 15/2;
+//                    DesiredOrientationPitch_Array[0]= -15/2;
+//                    DesiredOrientationPitch_Array[1]= -15/2;
+//                    DesiredOrientationPitch_Array[2]= 15/2;
+//                    DesiredOrientationPitch_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Forward");
                     break;
                 // ll
@@ -757,10 +778,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -10;
-                    DesiredOrientationPitch_Array[1]= -10;
-                    DesiredOrientationPitch_Array[2]= 10;
-                    DesiredOrientationPitch_Array[3]= 10;
+//                    DesiredOrientationPitch_Array[0]= -10;
+//                    DesiredOrientationPitch_Array[1]= -10;
+//                    DesiredOrientationPitch_Array[2]= 10;
+//                    DesiredOrientationPitch_Array[3]= 10;
                     MotorControl.setText("Set Point = Forward");
                     break;
                 // mm
@@ -770,23 +791,26 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5/2;
-                    DesiredOrientationPitch_Array[1]= 5/2;
-                    DesiredOrientationPitch_Array[2]= -5/2;
-                    DesiredOrientationPitch_Array[3]= -5/2;
+//                    DesiredOrientationPitch_Array[0]= 5/2;
+//                    DesiredOrientationPitch_Array[1]= 5/2;
+//                    DesiredOrientationPitch_Array[2]= -5/2;
+//                    DesiredOrientationPitch_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Backward");
                     break;
                 // hold up
+                // PITCH -15 : YAW 0
                 case 110:
                     Log.d("R:", "Backward 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5;
-                    DesiredOrientationPitch_Array[1]= 5;
-                    DesiredOrientationPitch_Array[2]= -5;
-                    DesiredOrientationPitch_Array[3]= -5;
+                    desiredPitch = -15.0f;
+                    desiredYaw = 0.0f;
+//                    DesiredOrientationPitch_Array[0]= 5;
+//                    DesiredOrientationPitch_Array[1]= 5;
+//                    DesiredOrientationPitch_Array[2]= -5;
+//                    DesiredOrientationPitch_Array[3]= -5;
                     MotorControl.setText("Set Point = Backward");
                     break;
                 // oo
@@ -796,10 +820,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 15/2;
-                    DesiredOrientationPitch_Array[1]= 15/2;
-                    DesiredOrientationPitch_Array[2]= -15/2;
-                    DesiredOrientationPitch_Array[3]= -15/2;
+//                    DesiredOrientationPitch_Array[0]= 15/2;
+//                    DesiredOrientationPitch_Array[1]= 15/2;
+//                    DesiredOrientationPitch_Array[2]= -15/2;
+//                    DesiredOrientationPitch_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Backward");
                     break;
                 // pp
@@ -809,10 +833,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 10;
-                    DesiredOrientationPitch_Array[1]= 10;
-                    DesiredOrientationPitch_Array[2]= -10;
-                    DesiredOrientationPitch_Array[3]= -10;
+//                    DesiredOrientationPitch_Array[0]= 10;
+//                    DesiredOrientationPitch_Array[1]= 10;
+//                    DesiredOrientationPitch_Array[2]= -10;
+//                    DesiredOrientationPitch_Array[3]= -10;
                     MotorControl.setText("Set Point = Backward");
                     break;
                 // yy
@@ -822,31 +846,34 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5/2;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= 5/2;
-                    DesiredOrientationYaw_Array[0]= -5/2;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= 5/2;
+//                    DesiredOrientationPitch_Array[0]= -5/2;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= 5/2;
+//                    DesiredOrientationYaw_Array[0]= -5/2;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= 5/2;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
                 // zz
+                // PITCH 15 : YAW 15
                 case 122:
                     Log.d("R:", "Forward Left 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -5;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= 5;
-                    DesiredOrientationYaw_Array[0]= -5;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= 5;
+                    desiredPitch = 15.0f;
+                    desiredYaw = 15.0f;
+//                    DesiredOrientationPitch_Array[0]= -5;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= 5;
+//                    DesiredOrientationYaw_Array[0]= -5;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= 5;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
                 // {{....
@@ -856,14 +883,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -15/2;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= 15/2;
-                    DesiredOrientationYaw_Array[0]= -15/2;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= 15/2;
+//                    DesiredOrientationPitch_Array[0]= -15/2;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= 15/2;
+//                    DesiredOrientationYaw_Array[0]= -15/2;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= 15/2;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
                 // ||....
@@ -873,14 +900,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= -10;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= 10;
-                    DesiredOrientationYaw_Array[0]= -10;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= 10;
+//                    DesiredOrientationPitch_Array[0]= -10;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= 10;
+//                    DesiredOrientationYaw_Array[0]= -10;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= 10;
                     MotorControl.setText("Set Point = Forward Left");
                     break;
                 // CC
@@ -890,31 +917,34 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= -5/2;
-                    DesiredOrientationPitch_Array[2]= 5/2;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= -5/2;
-                    DesiredOrientationYaw_Array[2]= 5/2;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= -5/2;
+//                    DesiredOrientationPitch_Array[2]= 5/2;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= -5/2;
+//                    DesiredOrientationYaw_Array[2]= 5/2;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
                 // DD
+                // PITCH 15 : YAW -15
                 case 68:
                     Log.d("R:", "Forward Right 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= -5;
-                    DesiredOrientationPitch_Array[2]= 5;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= -5;
-                    DesiredOrientationYaw_Array[2]= 5;
-                    DesiredOrientationYaw_Array[3]= 0;
+                    desiredPitch = 15.0f;
+                    desiredYaw = -15.0f;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= -5;
+//                    DesiredOrientationPitch_Array[2]= 5;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= -5;
+//                    DesiredOrientationYaw_Array[2]= 5;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
                 // EE
@@ -924,14 +954,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= -15/2;
-                    DesiredOrientationPitch_Array[2]= 15/2;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= -15/2;
-                    DesiredOrientationYaw_Array[2]= 15/2;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= -15/2;
+//                    DesiredOrientationPitch_Array[2]= 15/2;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= -15/2;
+//                    DesiredOrientationYaw_Array[2]= 15/2;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
                 // FF
@@ -941,14 +971,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= -10;
-                    DesiredOrientationPitch_Array[2]= 10;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= -10;
-                    DesiredOrientationYaw_Array[2]= 10;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= -10;
+//                    DesiredOrientationPitch_Array[2]= 10;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= -10;
+//                    DesiredOrientationYaw_Array[2]= 10;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Forward Right");
                     break;
                 // GG
@@ -958,31 +988,34 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= 5/2;
-                    DesiredOrientationPitch_Array[2]= -5/2;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= 5/2;
-                    DesiredOrientationYaw_Array[2]= -5/2;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= 5/2;
+//                    DesiredOrientationPitch_Array[2]= -5/2;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= 5/2;
+//                    DesiredOrientationYaw_Array[2]= -5/2;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Backward Left");
                     break;
                 // HH
+                // PITCH -15 : YAW 15
                 case 72:
                     Log.d("R:", "Backward Left 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= 5;
-                    DesiredOrientationPitch_Array[2]= -5;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= 5;
-                    DesiredOrientationYaw_Array[2]= -5;
-                    DesiredOrientationYaw_Array[3]= 0;
+                    desiredPitch = -15.0f;
+                    desiredYaw = 15.0f;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= 5;
+//                    DesiredOrientationPitch_Array[2]= -5;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= 5;
+//                    DesiredOrientationYaw_Array[2]= -5;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
@@ -993,14 +1026,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= 15/2;
-                    DesiredOrientationPitch_Array[2]= -15/2;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= 15/2;
-                    DesiredOrientationYaw_Array[2]= -15/2;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= 15/2;
+//                    DesiredOrientationPitch_Array[2]= -15/2;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= 15/2;
+//                    DesiredOrientationYaw_Array[2]= -15/2;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
@@ -1011,14 +1044,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 0;
-                    DesiredOrientationPitch_Array[1]= 10;
-                    DesiredOrientationPitch_Array[2]= -10;
-                    DesiredOrientationPitch_Array[3]= 0;
-                    DesiredOrientationYaw_Array[0]= 0;
-                    DesiredOrientationYaw_Array[1]= 10;
-                    DesiredOrientationYaw_Array[2]= -10;
-                    DesiredOrientationYaw_Array[3]= 0;
+//                    DesiredOrientationPitch_Array[0]= 0;
+//                    DesiredOrientationPitch_Array[1]= 10;
+//                    DesiredOrientationPitch_Array[2]= -10;
+//                    DesiredOrientationPitch_Array[3]= 0;
+//                    DesiredOrientationYaw_Array[0]= 0;
+//                    DesiredOrientationYaw_Array[1]= 10;
+//                    DesiredOrientationYaw_Array[2]= -10;
+//                    DesiredOrientationYaw_Array[3]= 0;
                     MotorControl.setText("Set Point = Backward Left");
                     break;
 
@@ -1029,31 +1062,34 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5/2;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= -5/2;
-                    DesiredOrientationYaw_Array[0]= 5/2;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= -5/2;
+//                    DesiredOrientationPitch_Array[0]= 5/2;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= -5/2;
+//                    DesiredOrientationYaw_Array[0]= 5/2;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= -5/2;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
                 // LL
+                // PITCH -15 : YAW -15
                 case 76:
                     Log.d("R:", "Backward Right 50%");
                     // Firebase Code
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 5;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= -5;
-                    DesiredOrientationYaw_Array[0]= 5;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= -5;
+                    desiredPitch = -15.0f;
+                    desiredYaw = -15.0f;
+//                    DesiredOrientationPitch_Array[0]= 5;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= -5;
+//                    DesiredOrientationYaw_Array[0]= 5;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= -5;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
                 // MM
@@ -1063,14 +1099,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 15/2;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= -15/2;
-                    DesiredOrientationYaw_Array[0]= 15/2;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= -15/2;
+//                    DesiredOrientationPitch_Array[0]= 15/2;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= -15/2;
+//                    DesiredOrientationYaw_Array[0]= 15/2;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= -15/2;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
                 // NN
@@ -1080,14 +1116,14 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                     map.put("name", user_name);
                     map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
                     message_root.updateChildren(map);
-                    DesiredOrientationPitch_Array[0]= 10;
-                    DesiredOrientationPitch_Array[1]= 0;
-                    DesiredOrientationPitch_Array[2]= 0;
-                    DesiredOrientationPitch_Array[3]= -10;
-                    DesiredOrientationYaw_Array[0]= 10;
-                    DesiredOrientationYaw_Array[1]= 0;
-                    DesiredOrientationYaw_Array[2]= 0;
-                    DesiredOrientationYaw_Array[3]= -10;
+//                    DesiredOrientationPitch_Array[0]= 10;
+//                    DesiredOrientationPitch_Array[1]= 0;
+//                    DesiredOrientationPitch_Array[2]= 0;
+//                    DesiredOrientationPitch_Array[3]= -10;
+//                    DesiredOrientationYaw_Array[0]= 10;
+//                    DesiredOrientationYaw_Array[1]= 0;
+//                    DesiredOrientationYaw_Array[2]= 0;
+//                    DesiredOrientationYaw_Array[3]= -10;
                     MotorControl.setText("Set Point = Backward Right");
                     break;
 
@@ -1169,36 +1205,40 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         }
         else{return;}
 
-        //else it will output the Roll, Pitch and Yawn data
+        //else it will output the Roll, Pitch and Yaw data
         Roll.setText("Roll :" + Float.toString(Math.round(event.values[0])));
         Pitch.setText("Pitch :" + Float.toString(Math.round(event.values[1])));
         Yaw.setText("Yaw :" + Float.toString(Math.round(event.values[2])));
 
-        //Log.d("Number", String.valueOf(event.values[2]));
-        //Log.d("Math", String.valueOf(.5*event.values[2]));
+        // Calculating changes need to PIDs to balance out errors in both Pitch and Yaw
+        // Slightly different for each servo do to workings of UAV
+        CalculatePIDPitchServo1(event.values[1] - desiredPitch);
+        CalculatePIDYawServo1(event.values[2] - desiredYaw);
+        CalculatePIDPitchServo2(event.values[1] - desiredPitch);
+        CalculatePIDYawServo2(event.values[2] - desiredYaw);
+        CalculatePIDPitchServo3(event.values[1] - desiredPitch);
+        CalculatePIDYawServo3(event.values[2] - desiredYaw);
+        CalculatePIDPitchServo4(event.values[1] - desiredPitch);
+        CalculatePIDYawServo4(event.values[2] - desiredYaw);
 
-        CalculatePIDPitchServo1(event.values[1]);
-        CalculatePIDYawServo1(event.values[2]);
-        CalculatePIDPitchServo2(event.values[1]);
-        CalculatePIDYawServo2(event.values[2]);
-        CalculatePIDPitchServo3(event.values[1]);
-        CalculatePIDYawServo3(event.values[2]);
-        CalculatePIDPitchServo4(event.values[1]);
-        CalculatePIDYawServo4(event.values[2]);
+        Servo1.setPWM_Output(Servo1.getPitch_PMW_Output() + Servo1.getYaw_PMW_Output() + Servo_Arr[0]);
+        Servo2.setPWM_Output(Servo2.getPitch_PMW_Output() + Servo2.getYaw_PMW_Output() + Servo_Arr[1]);
+        Servo3.setPWM_Output(Servo3.getPitch_PMW_Output() + Servo3.getYaw_PMW_Output() + Servo_Arr[2]);
+        Servo4.setPWM_Output(Servo4.getPitch_PMW_Output() + Servo4.getYaw_PMW_Output() + Servo_Arr[3]);
 
-        //Log.d("Event Value 0", " "+ event.values[0]);
-       // Log.d("Event Value 1", " "+ event.values[1]);
-       // Log.d("Event Value 2", " "+ event.values[2]);
-        Servo1.setPWM_Output(Servo1.getPitch_PMW_Output()+Servo1.getYaw_PMW_Output()+Servo_Arr[0]);
-        Servo2.setPWM_Output(Servo2.getPitch_PMW_Output()+Servo2.getYaw_PMW_Output()+Servo_Arr[1]);
-        Servo3.setPWM_Output(Servo3.getPitch_PMW_Output()+Servo3.getYaw_PMW_Output()+Servo_Arr[2]);
-        Servo4.setPWM_Output(Servo4.getPitch_PMW_Output()+Servo4.getYaw_PMW_Output()+Servo_Arr[3]);
-
-        //Log.d("Servo1_Pitch_PMW_Output",Float.toString(Servo1_Pitch_PMW_Output));
-        //Log.d("Servo1_Yaw_PMW_Output",Float.toString(Servo1_Yaw_PMW_Output));
-        //Log.d("Servo_Arr",Arrays.toString(Servo_Arr));
-        //Log.d("Servo1_PWM_Output",Float.toString(Servo1_PWM_Output));
-
+//        Log.d("ServoArray",Arrays.toString(Servo_Arr));
+//        Log.d("Servo1", "Pitch PMW Output: \t" + Float.toString(Servo1.getPitch_PMW_Output()));
+//        Log.d("Servo1", "Yaw PMW Output: \t\t" + Float.toString(Servo1.getYaw_PMW_Output()));
+//        Log.d("Servo1", "PWM Output: \t\t\t" + Float.toString(Servo1.getPWM_Output()));
+//        Log.d("Servo2", "Pitch PMW Output: \t" + Float.toString(Servo2.getPitch_PMW_Output()));
+//        Log.d("Servo2", "Yaw PMW Output: \t\t" + Float.toString(Servo2.getYaw_PMW_Output()));
+//        Log.d("Servo2", "PWM Output: \t\t\t" + Float.toString(Servo2.getPWM_Output()));
+//        Log.d("Servo3", "Pitch PMW Output: \t" + Float.toString(Servo3.getPitch_PMW_Output()));
+//        Log.d("Servo3", "Yaw PMW Output: \t\t" + Float.toString(Servo3.getYaw_PMW_Output()));
+//        Log.d("Servo3", "PWM Output: \t\t\t" + Float.toString(Servo3.getPWM_Output()));
+//        Log.d("Servo4", "Pitch PMW Output: \t" + Float.toString(Servo4.getPitch_PMW_Output()));
+//        Log.d("Servo4", "Yaw PMW Output: \t\t" + Float.toString(Servo4.getYaw_PMW_Output()));
+//        Log.d("Servo4", "PWM Output: \t\t\t" + Float.toString(Servo4.getPWM_Output()));
 
         Servo_Arr2[0]=(byte) Servo1.getPWM_Output();
         Servo_Arr2[1]=(byte) Servo2.getPWM_Output();
@@ -1206,7 +1246,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo_Arr2[3]=(byte) Servo4.getPWM_Output();
 
         appendLog(Float.toString(System.currentTimeMillis())+"\t"+Float.toString(event.values[1])+"\t"+Float.toString(event.values[2])+"\t"+Arrays.toString(Servo_Arr2));
-        //Log.d("Serial Data", Arrays.toString(Servo_Arr2));
+        Log.d("Serial Data", Arrays.toString(Servo_Arr2) + "________________________________");
 
         for (byte j = 0; j < 4; j++) {
             Servo_Arr2[j] = chk_min_max_speed(Servo_Arr2[j]);
@@ -1234,7 +1274,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 
     // Verifies servo speed doesn't ecliplse 90, go below 10
     public byte chk_min_max_speed(byte speed) {
-        if (speed > 90) speed = 90;
+        if (speed > 100) speed = 100;
         if (speed < 0) speed = 0;
         //Log.d("R:", "Checked Min Max Speed = "+speed);
         return speed;
@@ -1259,94 +1299,45 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         }
     }*/
 
+
+    // ***NOTE: polarity is -1 for Pitch Servo 3 and Servo 4, for Yaw Servo 2 and Servo 4
     // PID Servo 1 function
     public void CalculatePIDPitchServo1(float PitchErrorServo1) {
-        ControlServoLogic.CalculatePIDPitch(Servo1, PitchErrorServo1);
-//
-//        byte i;
-//        float PIDValue;
-//        float pitchError = 0.0f;
-//        float pitchDelta;
-//        float pitchPWMOutput;
-//
-//        float[] servo1PitchError = Servo1.getPitch_Error();
-//        servo1PitchError[Servo1.getPitch_Current_i()] = PitchErrorServo1;
-//        Servo1.setPitch_Error(servo1PitchError);
-//
-//        //Log.d("Servo1PiErrorCurrenti]",Float.toString(PitchErrorServo1));
-//
-//
-//        for (i=0;i<10;i++){
-//            pitchError += Math.round(Servo1.getPitch_ErrorIndex(i));
-//        }
-//        Servo1.setPitch_Accumulator(Servo1.getPitch_Accumulator() + pitchError);
-//
-//
-//        pitchDelta = Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i())-Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i() -1);
-//        Servo1.setPitch_Delta(pitchDelta);
-//
-//        PIDValue = (float) ((Servo1.getPitch_ErrorIndex(Servo1.getPitch_Current_i()) * Servo1.getPitch_PTerm()) + (Servo1.getPitch_ITerm() * Servo1.getPitch_Accumulator()) + (Servo1.getPitch_DTerm() * Servo1.getPitch_Delta()));
-//        //Log.d("PitchPIDValue",Float.toString(PIDValue));
-//
-//        pitchPWMOutput = PIDValue;
-//        pitchPWMOutput = Math.min(pitchPWMOutput,50);
-//        pitchPWMOutput = Math.max(pitchPWMOutput,-50);
-//        Servo1.setPitch_PMW_Output(pitchPWMOutput);
-//
-//        Servo1.setPitch_Current_i(Servo1.getPitch_Current_i() + 1);
-//
-//
-//        /*s
-//        for(i=0;i<10;i++) {
-//            Servo1_Pitch_Error[i + 1] = Servo1_Pitch_Error[i];
-//            Servo1_Pitch_Error[0] = -1*(DesiredOrientationPitch_Array[0] - PitchErrorServo1);}
-//
-//        for (float j : Servo1_Pitch_Error) {
-//            Servo1_Pitch_Accumulator += Math.round(j);}
-//
-//        PIDValue = (Servo1_Pitch_Error[0] * Servo1_Pitch_PTerm) + ((Servo1_Pitch_ITerm * Servo1_Pitch_Accumulator)) + (Servo1_Pitch_DTerm * ((Servo1_Pitch_Error[0] - Servo1_Pitch_Error[9])));
-//
-//        Servo1_Pitch_PMW_Output=PIDValue;
-//        if(Servo1_Pitch_PMW_Output > 50) Servo1_Pitch_PMW_Output = 50;
-//        if(Servo1_Pitch_PMW_Output < -50) Servo1_Pitch_PMW_Output = -50;
-//
-//        Servo1_Pitch_Accumulator=0;
-//        */
-
+        ControlServoLogic.CalculatePIDPitch(Servo1, PitchErrorServo1, 1);
     }
 
     public void CalculatePIDYawServo1(float YawErrorServo1) {
-        ControlServoLogic.CalculatePIDYaw(Servo1,YawErrorServo1);
+        ControlServoLogic.CalculatePIDYaw(Servo1,YawErrorServo1,1);
         Accum1.setText("Accum1:" + Float.toString(Servo1.getYaw_Accumulator()+Servo1.getPitch_Accumulator()));
     }
 
     // PID Servo 2 function
     public void CalculatePIDPitchServo2(float PitchErrorServo2) {
-        ControlServoLogic.CalculatePIDPitch(Servo2, PitchErrorServo2);
+        ControlServoLogic.CalculatePIDPitch(Servo2, PitchErrorServo2, 1);
     }
 
     public void CalculatePIDYawServo2(float YawErrorServo2) {
-        ControlServoLogic.CalculatePIDYaw(Servo2,YawErrorServo2);
+        ControlServoLogic.CalculatePIDYaw(Servo2,YawErrorServo2,-1);
         Accum2.setText("Accum2:" + Float.toString(Servo2.getYaw_Accumulator()+Servo2.getPitch_Accumulator()));
     }
 
     // PID Servo 3 function
     public void CalculatePIDPitchServo3(float PitchErrorServo3) {
-        ControlServoLogic.CalculatePIDPitch(Servo3, PitchErrorServo3);
+        ControlServoLogic.CalculatePIDPitch(Servo3, PitchErrorServo3, -1);
     }
 
     public void CalculatePIDYawServo3(float YawErrorServo3) {
-        ControlServoLogic.CalculatePIDYaw(Servo3,YawErrorServo3);
+        ControlServoLogic.CalculatePIDYaw(Servo3,YawErrorServo3,1);
         Accum3.setText("Accum3:" + Float.toString(Servo3.getYaw_Accumulator()+Servo3.getPitch_Accumulator()));
     }
 
     // PID Servo 4 function
     public void CalculatePIDPitchServo4(float PitchErrorServo4) {
-        ControlServoLogic.CalculatePIDPitch(Servo4,PitchErrorServo4);
+        ControlServoLogic.CalculatePIDPitch(Servo4,PitchErrorServo4, -1);
     }
 
     public void CalculatePIDYawServo4(float YawErrorServo4) {
-        ControlServoLogic.CalculatePIDYaw(Servo4,YawErrorServo4);
+        ControlServoLogic.CalculatePIDYaw(Servo4,YawErrorServo4,-1);
         Accum4.setText("Accum4:" + Float.toString(Servo4.getYaw_Accumulator()+Servo4.getPitch_Accumulator()));
     }
 
