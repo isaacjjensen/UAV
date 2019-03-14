@@ -1246,7 +1246,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Servo_Arr2[3]=(byte) Servo4.getPWM_Output();
 
         appendLog(Float.toString(System.currentTimeMillis())+"\t"+Float.toString(event.values[1])+"\t"+Float.toString(event.values[2])+"\t"+Arrays.toString(Servo_Arr2));
-        Log.d("Serial Data", Arrays.toString(Servo_Arr2) + "________________________________");
+        //Log.d("Serial Data", Arrays.toString(Servo_Arr2) + "________________________________");
 
         for (byte j = 0; j < 4; j++) {
             Servo_Arr2[j] = chk_min_max_speed(Servo_Arr2[j]);
