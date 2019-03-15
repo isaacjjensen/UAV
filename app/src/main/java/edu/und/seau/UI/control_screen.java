@@ -52,7 +52,10 @@ import edu.und.seau.uav.R;
 public class control_screen extends AppCompatActivity implements SensorEventListener {
 
     //Flight Variables
-    private String control_command, UAV_Pilot_name;
+    private Object control_command;
+    private String UAV_Pilot_name;
+    private Location currentLocation;
+
     private final String TAG = "UAV Control Screen";
 
     // TextView Variables
@@ -78,7 +81,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     boolean ServoFront;
     boolean ServoBack;
     boolean is_uav_taking_off = false;
-    public byte[] Servo_Arr = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
+    public float[] Servo_Arr = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
     public byte[] Servo_Arr2 = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
 //    public float[] DesiredOrientationPitch_Array = {0, 0, 0, 0};  // { Front Left, Front Right, Back Left, Back Right }
 //    public float[] DesiredOrientationYaw_Array = {0, 0, 0, 0}; // { Front Left, Front Right, Back Left, Back Right }
@@ -86,6 +89,10 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     public float desiredYaw = 0.0f;
     public float desiredRoll = 0.0f;
 
+    private float maxPitch = 25.0f;
+    private float maxYaw = 25.0f;
+    // This decides how quickly the UAV changes thrust (also depends on pollTime in UAV_Controller)
+    private float zMultiplier = 2.5f;
 
     public ControlServo Servo1;
     public ControlServo Servo2;
@@ -305,11 +312,12 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         locationListener = new LocationListener() { // This is where the values for time, alt, long, and lat are defined.
             @Override
             public void onLocationChanged(Location location) {
-                time = location.getTime();
-                altitude = location.getAltitude();
-                longitude = location.getLongitude();
-                latitude = location.getLatitude();
-                Date date = new Date(time);
+                currentLocation = location;
+//                time = location.getTime();
+//                altitude = location.getAltitude();
+//                longitude = location.getLongitude();
+//                latitude = location.getLatitude();
+//                Date date = new Date(time);
                 //Log.d("R2H", "Updating GPS Coordinates");
             }
 
@@ -370,769 +378,51 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 
         Iterator i = dataSnapshot.getChildren().iterator();
 
+        // This is very ineffective in getting what we need
+        // TODO: Change this to be less GARBAGE
         while (i.hasNext()) {
-            control_command = (String) ((DataSnapshot) i.next()).getValue();
+            control_command = ((DataSnapshot) i.next()).getValue();
             UAV_Pilot_name = (String) ((DataSnapshot) i.next()).getValue();
-
         }
 
+        Map cmdMap;
+
+        if (control_command instanceof Map){
+            cmdMap = (Map) control_command;
+        } else {
+            // Return if it is not a proper control_command
+            return;
+        }
+
+        float cmdX = ((Number)cmdMap.get("x")).floatValue();
+        float cmdY = ((Number)cmdMap.get("y")).floatValue();
+        float cmdZ = ((Number)cmdMap.get("z")).floatValue();
+
         chat_conversation.setText("");
-        chat_conversation.append(UAV_Pilot_name + " : " + control_command);
+        chat_conversation.append(UAV_Pilot_name + " : " +
+                String.format("%.2f", cmdX) + ", " +
+                String.format("%.2f", cmdY) + ", " +
+                String.format("%.2f", cmdZ));
 
         if (UAV_Pilot_name.equals("HOST")) {
 
-            int cmd = check_for_err(control_command);
             Map<String, Object> map = new HashMap<String, Object>();
-            //temp_key = root.push().getKey();
+            temp_key = root.push().getKey();
             DatabaseReference message_root = root.child(temp_key);
 
-            byte j;
-            Log.d("D","CMD = "+ cmd);
-            switch (cmd) {
-            // Each case is based on the ASCII value of a symbol listed above each case
-                // OO (oh oh)
-                // PITCH 0 : YAW 0
-                case 79:
-                    Log.d("R:", "Center");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 0.0f;
-                    desiredYaw = 0.0f;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Center");
-                    break;
-                // PP
-                // PITCH 0 : YAW 0
-                case 80:
-                    Log.d("R:", "Land");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    // USB Code
-                    //wait_in_milli(1000);
-                    desiredPitch = 0.0f;
-                    desiredYaw = 0.0f;
+            // Sending UAV's currentlocation to FireBase
+            map.put("name", user_name);
+            map.put("location", currentLocation);
+            message_root.updateChildren(map);
+            desiredPitch = -1.0f * maxPitch * cmdY;
+            desiredYaw = -1.0f * maxYaw * cmdX;
 
-
-                    while(Servo_Arr[0] != 0 && Servo_Arr[1] != 0 && Servo_Arr[2] != 0 && Servo_Arr[2] !=0) {
-
-                        for (j = 0; j < 4; j++) {
-
-                            Servo_Arr[j] -= 1; // decrease all servo speeds
-                            Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-
-                        }
-
-                        if (usb_is_connected) serialPort.write(Servo_Arr2);
-                        USBData.setText("Serial Data Sent : Landing");
-
-                    }
-
-                    break;
-                // This should be avoided at all costs as System.exit is a HORRIBLE idea
-                // QQ
-//                case 81:
-//                    Log.d("R:", "E-Stop");
-//                    // Firebase Code
-//                    map.put("name", user_name);
-//                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-//                    message_root.updateChildren(map);
-//
-//                    for(int k=0;k<4;k++){
-//                        Servo_Arr2[k] = -50;
-//                    }
-//
-//                    Log.d("Serial Data", Arrays.toString(Servo_Arr2));
-//
-//                    if (usb_is_connected) {
-//                        serialPort.write(Servo_Arr2);
-//                        USBData.setText("Serial Data Sent : E-Stop");
-//                    }
-//
-//                    serialPort.close();
-//                    System.exit(0);
-//                    break;
-                // aa
-                // PITCH 0 : YAW 0
-                case 97:
-                    Log.d("R:", "Up 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 0.0f;
-                    desiredYaw = 0.0f;
-
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] += 10; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // RR
-                case 82:
-                    Log.d("R:", "Up 2.5%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] += 2.5; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // SS
-                case 83:
-                    Log.d("R:", "Down 2.5%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] -= 2.5; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // bb
-                case 98:
-                    Log.d("R:", "Up 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] += 20; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // cc
-                case 99:
-                    Log.d("R:", "Up 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] += 30; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // dd
-                case 100:
-                    Log.d("R:", "Up 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] += 35; // increase all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Up");
-                    break;
-                // ee
-                // PITCH 0 : YAW 0
-                case 101:
-                    Log.d("R:", "Down 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 0.0f;
-                    desiredYaw = 0.0f;
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] -= 10; // decrease all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Down");
-                    break;
-                // ff
-                case 102:
-                    Log.d("R:", "Down 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] -= 20; // decrease all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Down");
-                    break;
-                // gg
-                case 103:
-                    Log.d("R:", "Down 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] -= 30; // decrease all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Down");
-                    break;
-                // hh
-                case 104:
-                    Log.d("R:", "Down 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    // USB Code
-                    for (j = 0; j < 4; j++) {
-                        Servo_Arr[j] -= 40; // decrease all servo speeds
-                        Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
-                    }
-                    if (usb_is_connected) serialPort.write(Servo_Arr2);
-                    USBData.setText("Serial Data Sent : Down");
-                    break;
-                // qq
-                case 113:
-                    Log.d("R:", "Left 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -5/2;
-//                    DesiredOrientationPitch_Array[1]= 5/2;
-//                    DesiredOrientationPitch_Array[2]= -5/2;
-//                    DesiredOrientationPitch_Array[3]= 5/2;
-                    MotorControl.setText("Set Point = Left");
-                    break;
-                // rr
-                // PITCH 0 : YAW 15
-                case 114:
-                    Log.d("R:", "Left 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 0.0f;
-                    desiredYaw = 15.0f;
-//                    DesiredOrientationPitch_Array[0]= -5;
-//                    DesiredOrientationPitch_Array[1]= 5;
-//                    DesiredOrientationPitch_Array[2]= -5;
-//                    DesiredOrientationPitch_Array[3]= 5;
-                    MotorControl.setText("Set Point = Left");
-                    break;
-                // ss
-                case 115:
-                    Log.d("R:", "Left 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -15/2;
-//                    DesiredOrientationPitch_Array[1]= 15/2;
-//                    DesiredOrientationPitch_Array[2]= -15/2;
-//                    DesiredOrientationPitch_Array[3]= 15/2;
-                    MotorControl.setText("Set Point = Left");
-                    break;
-                // tt
-                case 116:
-                    Log.d("R:", "Left 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -10;
-//                    DesiredOrientationPitch_Array[1]= 10;
-//                    DesiredOrientationPitch_Array[2]= -10;
-//                    DesiredOrientationPitch_Array[3]= 10;
-                    MotorControl.setText("Set Point = Left");
-                    break;
-                // uu
-                case 117:
-                    Log.d("R:", "Right 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 5/2;
-//                    DesiredOrientationPitch_Array[1]= -5/2;
-//                    DesiredOrientationPitch_Array[2]= 5/2;
-//                    DesiredOrientationPitch_Array[3]= -5/2;
-                    MotorControl.setText("Set Point = Right");
-                    break;
-                // vv
-                // PITCH 0 : YAW -15
-                case 118:
-                    Log.d("R:", "Right 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 0.0f;
-                    desiredYaw = -15.0f;
-//                    DesiredOrientationPitch_Array[0]= 5;
-//                    DesiredOrientationPitch_Array[1]= -5;
-//                    DesiredOrientationPitch_Array[2]= 5;
-//                    DesiredOrientationPitch_Array[3]= -5;
-                    MotorControl.setText("Set Point = Right");
-                    break;
-                // ww
-                case 119:
-                    Log.d("R:", "Right 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 15/2;
-//                    DesiredOrientationPitch_Array[1]= -15/2;
-//                    DesiredOrientationPitch_Array[2]= 15/2;
-//                    DesiredOrientationPitch_Array[3]= -15/2;
-                    MotorControl.setText("Set Point = Right");
-                    break;
-                // xx
-                case 120:
-                    Log.d("R:", "Right 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 10;
-//                    DesiredOrientationPitch_Array[1]= -10;
-//                    DesiredOrientationPitch_Array[2]= 10;
-//                    DesiredOrientationPitch_Array[3]= -10;
-                    MotorControl.setText("Set Point = Right");
-                    break;
-                // ii
-                case 105:
-                    Log.d("R:", "Forward 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -5/2;
-//                    DesiredOrientationPitch_Array[1]= -5/2;
-//                    DesiredOrientationPitch_Array[2]= 5/2;
-//                    DesiredOrientationPitch_Array[3]= 5/2;
-                    MotorControl.setText("Set Point = Forward");
-                    break;
-                // jj
-                // PITCH 15 : YAW 0
-                case 106:
-                    Log.d("R:", "Forward 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 15.0f;
-                    desiredYaw = 0.0f;
-//                    DesiredOrientationPitch_Array[0]= -5;
-//                    DesiredOrientationPitch_Array[1]= -5;
-//                    DesiredOrientationPitch_Array[2]= 5;
-//                    DesiredOrientationPitch_Array[3]= 5;
-                    MotorControl.setText("Set Point = Forward");
-                    break;
-                // kk
-                case 107:
-                    Log.d("R:", "Forward 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -15/2;
-//                    DesiredOrientationPitch_Array[1]= -15/2;
-//                    DesiredOrientationPitch_Array[2]= 15/2;
-//                    DesiredOrientationPitch_Array[3]= 15/2;
-                    MotorControl.setText("Set Point = Forward");
-                    break;
-                // ll
-                case 108:
-                    Log.d("R:", "Forward 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -10;
-//                    DesiredOrientationPitch_Array[1]= -10;
-//                    DesiredOrientationPitch_Array[2]= 10;
-//                    DesiredOrientationPitch_Array[3]= 10;
-                    MotorControl.setText("Set Point = Forward");
-                    break;
-                // mm
-                case 109:
-                    Log.d("R:", "Backward 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 5/2;
-//                    DesiredOrientationPitch_Array[1]= 5/2;
-//                    DesiredOrientationPitch_Array[2]= -5/2;
-//                    DesiredOrientationPitch_Array[3]= -5/2;
-                    MotorControl.setText("Set Point = Backward");
-                    break;
-                // hold up
-                // PITCH -15 : YAW 0
-                case 110:
-                    Log.d("R:", "Backward 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = -15.0f;
-                    desiredYaw = 0.0f;
-//                    DesiredOrientationPitch_Array[0]= 5;
-//                    DesiredOrientationPitch_Array[1]= 5;
-//                    DesiredOrientationPitch_Array[2]= -5;
-//                    DesiredOrientationPitch_Array[3]= -5;
-                    MotorControl.setText("Set Point = Backward");
-                    break;
-                // oo
-                case 111:
-                    Log.d("R:", "Backward 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 15/2;
-//                    DesiredOrientationPitch_Array[1]= 15/2;
-//                    DesiredOrientationPitch_Array[2]= -15/2;
-//                    DesiredOrientationPitch_Array[3]= -15/2;
-                    MotorControl.setText("Set Point = Backward");
-                    break;
-                // pp
-                case 112:
-                    Log.d("R:", "Backward 100 %");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 10;
-//                    DesiredOrientationPitch_Array[1]= 10;
-//                    DesiredOrientationPitch_Array[2]= -10;
-//                    DesiredOrientationPitch_Array[3]= -10;
-                    MotorControl.setText("Set Point = Backward");
-                    break;
-                // yy
-                case 121:
-                    Log.d("R:", "Forward Left 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -5/2;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= 5/2;
-//                    DesiredOrientationYaw_Array[0]= -5/2;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= 5/2;
-                    MotorControl.setText("Set Point = Forward Left");
-                    break;
-                // zz
-                // PITCH 15 : YAW 15
-                case 122:
-                    Log.d("R:", "Forward Left 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 15.0f;
-                    desiredYaw = 15.0f;
-//                    DesiredOrientationPitch_Array[0]= -5;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= 5;
-//                    DesiredOrientationYaw_Array[0]= -5;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= 5;
-                    MotorControl.setText("Set Point = Forward Left");
-                    break;
-                // {{....
-                case 123:
-                    Log.d("R:", "Forward Left 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -15/2;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= 15/2;
-//                    DesiredOrientationYaw_Array[0]= -15/2;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= 15/2;
-                    MotorControl.setText("Set Point = Forward Left");
-                    break;
-                // ||....
-                case 124:
-                    Log.d("R:", "Forward Left 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= -10;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= 10;
-//                    DesiredOrientationYaw_Array[0]= -10;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= 10;
-                    MotorControl.setText("Set Point = Forward Left");
-                    break;
-                // CC
-                case 67:
-                    Log.d("R:", "Forward Right");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= -5/2;
-//                    DesiredOrientationPitch_Array[2]= 5/2;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= -5/2;
-//                    DesiredOrientationYaw_Array[2]= 5/2;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Forward Right");
-                    break;
-                // DD
-                // PITCH 15 : YAW -15
-                case 68:
-                    Log.d("R:", "Forward Right 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = 15.0f;
-                    desiredYaw = -15.0f;
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= -5;
-//                    DesiredOrientationPitch_Array[2]= 5;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= -5;
-//                    DesiredOrientationYaw_Array[2]= 5;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Forward Right");
-                    break;
-                // EE
-                case 69:
-                    Log.d("R:", "Forward Right 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= -15/2;
-//                    DesiredOrientationPitch_Array[2]= 15/2;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= -15/2;
-//                    DesiredOrientationYaw_Array[2]= 15/2;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Forward Right");
-                    break;
-                // FF
-                case 70:
-                    Log.d("R:", "Forward Right 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= -10;
-//                    DesiredOrientationPitch_Array[2]= 10;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= -10;
-//                    DesiredOrientationYaw_Array[2]= 10;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Forward Right");
-                    break;
-                // GG
-                case 71:
-                    Log.d("R:", "Backward Left 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= 5/2;
-//                    DesiredOrientationPitch_Array[2]= -5/2;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= 5/2;
-//                    DesiredOrientationYaw_Array[2]= -5/2;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Backward Left");
-                    break;
-                // HH
-                // PITCH -15 : YAW 15
-                case 72:
-                    Log.d("R:", "Backward Left 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = -15.0f;
-                    desiredYaw = 15.0f;
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= 5;
-//                    DesiredOrientationPitch_Array[2]= -5;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= 5;
-//                    DesiredOrientationYaw_Array[2]= -5;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Backward Left");
-                    break;
-
-                // II
-                case 73:
-                    Log.d("R:", "Backward Left 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= 15/2;
-//                    DesiredOrientationPitch_Array[2]= -15/2;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= 15/2;
-//                    DesiredOrientationYaw_Array[2]= -15/2;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Backward Left");
-                    break;
-
-                // JJ
-                case 74:
-                    Log.d("R:", "Backward Left 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 0;
-//                    DesiredOrientationPitch_Array[1]= 10;
-//                    DesiredOrientationPitch_Array[2]= -10;
-//                    DesiredOrientationPitch_Array[3]= 0;
-//                    DesiredOrientationYaw_Array[0]= 0;
-//                    DesiredOrientationYaw_Array[1]= 10;
-//                    DesiredOrientationYaw_Array[2]= -10;
-//                    DesiredOrientationYaw_Array[3]= 0;
-                    MotorControl.setText("Set Point = Backward Left");
-                    break;
-
-                // KK
-                case 75:
-                    Log.d("R:", "Backward Right 25%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 5/2;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= -5/2;
-//                    DesiredOrientationYaw_Array[0]= 5/2;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= -5/2;
-                    MotorControl.setText("Set Point = Backward Right");
-                    break;
-                // LL
-                // PITCH -15 : YAW -15
-                case 76:
-                    Log.d("R:", "Backward Right 50%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-                    desiredPitch = -15.0f;
-                    desiredYaw = -15.0f;
-//                    DesiredOrientationPitch_Array[0]= 5;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= -5;
-//                    DesiredOrientationYaw_Array[0]= 5;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= -5;
-                    MotorControl.setText("Set Point = Backward Right");
-                    break;
-                // MM
-                case 77:
-                    Log.d("R:", "Backward Right 75%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 15/2;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= -15/2;
-//                    DesiredOrientationYaw_Array[0]= 15/2;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= -15/2;
-                    MotorControl.setText("Set Point = Backward Right");
-                    break;
-                // NN
-                case 78:
-                    Log.d("R:", "Backward Right 100%");
-                    // Firebase Code
-                    map.put("name", user_name);
-                    map.put("msg", time + " " + latitude + " " + longitude + " " + altitude);
-                    message_root.updateChildren(map);
-//                    DesiredOrientationPitch_Array[0]= 10;
-//                    DesiredOrientationPitch_Array[1]= 0;
-//                    DesiredOrientationPitch_Array[2]= 0;
-//                    DesiredOrientationPitch_Array[3]= -10;
-//                    DesiredOrientationYaw_Array[0]= 10;
-//                    DesiredOrientationYaw_Array[1]= 0;
-//                    DesiredOrientationYaw_Array[2]= 0;
-//                    DesiredOrientationYaw_Array[3]= -10;
-                    MotorControl.setText("Set Point = Backward Right");
-                    break;
-
-                default:
-                    Log.d("R:", "Didn't Match Case");
+            for (int j = 0; j < 4; j++) {
+                Servo_Arr[j] += -1.0f * zMultiplier * cmdZ; // increase all servo speeds
+                Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
             }
-
+            Log.d("Test", "Servo_Arr[0]: " + Servo_Arr[0]);
         }
-
     }
 
     //Added by John for action when Start button is used, verifies USB connection is valid
@@ -1271,11 +561,18 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 */
     }
 
-
     // Verifies servo speed doesn't ecliplse 90, go below 10
     public byte chk_min_max_speed(byte speed) {
         if (speed > 100) speed = 100;
         if (speed < 0) speed = 0;
+        //Log.d("R:", "Checked Min Max Speed = "+speed);
+        return speed;
+    }
+
+    // Verifies servo speed doesn't ecliplse 90, go below 10
+    public float chk_min_max_speed(float speed) {
+        if (speed > 100.0f) speed = 100.0f;
+        if (speed < 0.0f) speed = 0.0f;
         //Log.d("R:", "Checked Min Max Speed = "+speed);
         return speed;
     }
