@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="edu.und.seau.uav">
-    <uses-permission
-
-        android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <uses-feature android:name="android.hardware.gyroscope"/>
 
@@ -12,21 +12,32 @@
         android:icon="@mipmap/ic_launcher"
         android:label="UAV"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity android:name="edu.und.seau.UI.MainActivity"
             android:screenOrientation="portrait">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
+        <activity android:name="edu.und.seau.UI.connect_screen"
+            android:parentActivityName="edu.und.seau.UI.MainActivity">
+
+        <meta-data android:name="android.support.PARENT_ACTIVITY"
+            android:value="edu.und.seau.UI.MainActivity"/>
+        </activity>
+
         <activity
             android:label="@string/app_name"
             android:name="edu.und.seau.UI.control_screen"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:parentActivityName="edu.und.seau.UI.MainActivity">
+
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.und.seau.UI.MainActivity"/>
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>

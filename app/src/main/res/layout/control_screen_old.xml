@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relativeLayout2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true">
+
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="15dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        app:layout_constraintBottom_toTopOf="@+id/PitchOrientation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/usb_data"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Serial Data Sent to Ardunio"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Servo3" />
+
+    <Button
+        android:id="@+id/buttonStart"
+        android:layout_width="170dp"
+        android:layout_height="0dp"
+        android:enabled="true"
+        android:onClick="onClickStart"
+        android:text="Begin USB Serial"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/usb_status"
+        app:layout_constraintTop_toTopOf="@+id/buttonStop" />
+
+    <Button
+        android:id="@+id/buttonStop"
+        android:layout_width="150dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="13dp"
+        android:enabled="true"
+        android:onClick="onClickStop"
+        android:text="Stop USB Serial"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/usb_status"
+        app:layout_constraintTop_toTopOf="@+id/usb_status" />
+
+    <TextView
+        android:id="@+id/Roll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginBottom="13dp"
+        android:allowUndo="true"
+        android:text="Roll"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/Pitch"
+        app:layout_constraintEnd_toEndOf="@+id/Pitch"></TextView>
+
+    <TextView
+        android:id="@+id/YawOrientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="23dp"
+        android:layout_marginLeft="23dp"
+        android:allowUndo="true"
+        android:text="TextView"
+        android:textColor="#140dcc"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/Servo2"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/PitchOrientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="255dp"
+        android:allowUndo="true"
+        android:text="TextView"
+        android:textColor="#140dcc"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/usb_status"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="USB Serial Status"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MotorControl" />
+
+    <TextView
+        android:id="@+id/MotorControl"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Motor Control"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/usb_data" />
+
+    <TextView
+        android:id="@+id/Servo3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Servo3"
+        android:textColor="#ff0000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/Accum3"
+        app:layout_constraintTop_toBottomOf="@+id/Accum3" />
+
+    <TextView
+        android:id="@+id/Servo4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Servo4"
+        android:textColor="#ff0000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Accum4"
+        app:layout_constraintTop_toBottomOf="@+id/Accum4" />
+
+    <TextView
+        android:id="@+id/Servo1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Servo1"
+        android:textColor="#ff0000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/PitchOrientation"
+        app:layout_constraintTop_toBottomOf="@+id/PitchOrientation" />
+
+    <TextView
+        android:id="@+id/Servo2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Servo2"
+        android:textColor="#ff0000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/YawOrientation" />
+
+    <TextView
+        android:id="@+id/Accum1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Accum1"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/Servo1"
+        app:layout_constraintTop_toBottomOf="@+id/Servo1" />
+
+    <TextView
+        android:id="@+id/Accum2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Accum2"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Servo2"
+        app:layout_constraintTop_toBottomOf="@+id/Servo2" />
+
+    <TextView
+        android:id="@+id/Accum4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="27dp"
+        android:allowUndo="true"
+        android:text="Accum4"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/usb_data"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/Accum3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="138dp"
+        android:allowUndo="true"
+        android:text="Accum3"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/Yaw"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:allowUndo="true"
+        android:text="Yaw"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Roll"
+        app:layout_constraintTop_toBottomOf="@+id/Roll" />
+
+    <TextView
+        android:id="@+id/Pitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="131dp"
+        android:allowUndo="true"
+        android:text="Pitch"
+        android:textColor="#000000"
+        android:textIsSelectable="true"
+        android:textSize="10dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

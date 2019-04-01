@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/ConnectScreenHeadder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Waiting For Connection"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/ConnectionNotes"
+            style="@android:style/Widget.AutoCompleteTextView"
+            android:layout_width="339dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:gravity="center"
+            android:inputType="textMultiLine"
+            android:text="Make Sure to Select The Following UAV Name - ID Pair From The Controller APP"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ConnectScreenHeadder" />
+
+        <TextView
+            android:id="@+id/name_const"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="Name:"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ConnectionNotes" />
+
+        <TextView
+            android:id="@+id/name_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Default (Change Me)"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/name_const"
+            app:layout_constraintStart_toEndOf="@+id/name_const"
+            app:layout_constraintTop_toTopOf="@+id/name_const" />
+
+        <TextView
+            android:id="@+id/id_const"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="ID:"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="@+id/name_const"
+            app:layout_constraintTop_toBottomOf="@+id/name_const" />
+
+        <TextView
+            android:id="@+id/id_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Default (Change Me)"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/id_const"
+            app:layout_constraintStart_toEndOf="@+id/id_const"
+            app:layout_constraintTop_toTopOf="@+id/id_const" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
