@@ -1,12 +1,13 @@
 package edu.und.seau.UI;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import edu.und.seau.common.SharedSettingsManager;
+import edu.und.seau.common.SharedResourceManager;
 import edu.und.seau.di.components.DaggerPresentationComponent;
 import edu.und.seau.di.components.PresentationComponent;
 import edu.und.seau.presentation.presenters.MainScreenPresenter;
@@ -30,20 +31,19 @@ public class MainActivity extends AppCompatActivity implements MainView {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedSettingsManager.setContext(this);
+        SharedResourceManager.setSharedPreferences(getPreferences(MODE_PRIVATE));
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         PresentationComponent component = DaggerPresentationComponent.create();
         presenter = component.getMainPresenter();
         presenter.setView(this);
 
-        binding.connectButton.setOnClickListener(v -> {
-            onConnectButtonClicked();
-        });
+        binding.connectButton.setOnClickListener(v -> onConnectButtonClicked());
 
         if (!canAccessLocation()) {
             requestPermissions(LOCATION_PERMS, LOCATION_REQUEST);
         }
     }
+
 
     private void onConnectButtonClicked()
     {
@@ -53,6 +53,10 @@ public class MainActivity extends AppCompatActivity implements MainView {
     public void onConnected()
     {
         startActivity(new Intent(this, connect_screen.class));
+    }
+
+    public SharedPreferences getSharedPreferences(){
+        return getPreferences(MODE_PRIVATE);
     }
 
     public String getSelectedName(){

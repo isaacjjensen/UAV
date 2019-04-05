@@ -18,6 +18,8 @@ public class UAV {
 
     public void setName(String value) { Name = value;}
 
+    public void setId(String id){ this.id = id; }
+
     public void generateNewID()
     {
         id = UAVCommon.getRandomString();

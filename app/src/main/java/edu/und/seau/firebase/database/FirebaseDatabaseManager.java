@@ -1,8 +1,10 @@
 package edu.und.seau.firebase.database;
 
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.security.Key;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -10,7 +12,6 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 
 import edu.und.seau.common.FirebaseConstants;
-import edu.und.seau.common.SharedSettingsManager;
 import edu.und.seau.firebase.modelmapper.UavDBMapper;
 import edu.und.seau.firebase.models.uav.UavDBModel;
 import edu.und.seau.lib.UAV.objects.UAV;
@@ -24,8 +25,6 @@ public class FirebaseDatabaseManager implements FirebaseDatabaseInterface {
     private static final String KEY_NAME = FirebaseConstants.KEY_NAME;
     private static final String KEY_REQUESTS = FirebaseConstants.KEY_REQUESTS;
 
-    private String UavID = null;
-
     private FirebaseFirestore database;
 
     @Inject
@@ -33,35 +32,35 @@ public class FirebaseDatabaseManager implements FirebaseDatabaseInterface {
         this.database = database;
     }
 
-    @Override
-    public void initializeUAVDBInstance(Consumer<UAV> onResult) {
-        String uavID = null;
-        if(UavID == null)
+
+    public void isIdAvailable(String key, Consumer<Boolean> isAvailable){
+        DocumentReference document = database
+                .collection(KEY_UAV)
+                .document(key);
+
+        document.get().addOnCompleteListener(task -> {
+            isAvailable.accept(task.getResult() == null);
+        } );
+    }
+    
+    public void initializeUAVDBInstance(String key,Consumer<UAV> onResult) {
+        if(key != null)
         {
-            uavID = SharedSettingsManager.GetSetting(SharedSettingsManager.KEY_UAVID);
-        }
-        if(uavID == null)
-        {
-            database.collection(KEY_UAV).get().addOnCompleteListener(task -> {
-                UAV uav = null;
-                if(task.isSuccessful())
-                {
-                    uav = new UAV();
-                    List<DocumentSnapshot> snapshots = Objects.requireNonNull(task.getResult()).getDocuments();
-                    do{
-                        uav.generateNewID();
-                    } while (ContainsID(snapshots,uav.getId()));
-                    database.collection(KEY_UAV).document(uav.getId()).set(UavDBMapper.getUavDBModel(uav));
-                    UavID = uav.getId();
-                    SharedSettingsManager.StoreSetting(SharedSettingsManager.KEY_UAVID,UavID);
+            database.collection(KEY_UAV).document(key).get().addOnCompleteListener(task ->{
+                if(task.isSuccessful()){
+
                 }
-                onResult.accept(uav);
             });
         }
         else
         {
-            onResult.accept(new UAV(uavID));
+            onResult.accept(null);
         }
+    }
+
+    @Override
+    public void initializeUAVDBInstance(Consumer<UAV> onResult) {
+
     }
 
     public void updateUAVName(UAV uav, Consumer<Boolean> onResult)
@@ -86,7 +85,8 @@ public class FirebaseDatabaseManager implements FirebaseDatabaseInterface {
 
     public void getUAVDBInstance(Consumer<UavDBModel> onResult)
     {
-        String UavID = SharedSettingsManager.GetSetting(SharedSettingsManager.KEY_UAVID);
+        //String UavID = SharedSettingsManager.GetSetting(SharedSettingsManager.KEY_UAVID);
+        String UavID = "";
         if(UavID != null)
         {
             database.collection(KEY_UAV).document(UavID).get().addOnCompleteListener(command -> {
