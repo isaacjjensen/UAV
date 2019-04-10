@@ -92,7 +92,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     private float maxPitch = 25.0f;
     private float maxYaw = 25.0f;
     // This decides how quickly the UAV changes thrust (also depends on pollTime in UAV_Controller)
-    private float zMultiplier = 2.5f;
+    private float zMultiplier = 10.0f;
 
     public ControlServo Servo1;
     public ControlServo Servo2;
@@ -108,37 +108,37 @@ public class control_screen extends AppCompatActivity implements SensorEventList
 
         //InitializeServoSettings Servo 1
         Servo1 = new ControlServo();
-        Servo1.setPitch_PTerm(.75);
+        Servo1.setPitch_PTerm(.075);
         Servo1.setPitch_ITerm(.0001);
         Servo1.setPitch_DTerm((.95));
-        Servo1.setYaw_PTerm(.75);
+        Servo1.setYaw_PTerm(.075);
         Servo1.setYaw_ITerm(.0001);
         Servo1.setYaw_DTerm(.95);
 
         //InitializeServoSettings Servo 2
         Servo2 = new ControlServo();
-        Servo2.setPitch_PTerm(.75);
+        Servo2.setPitch_PTerm(.075);
         Servo2.setPitch_ITerm(.0001);
         Servo2.setPitch_DTerm((.95));
-        Servo2.setYaw_PTerm(.75);
+        Servo2.setYaw_PTerm(.075);
         Servo2.setYaw_ITerm(.0001);
         Servo2.setYaw_DTerm(.95);
 
         //InitializeServoSettings Servo 3
         Servo3 = new ControlServo();
-        Servo3.setPitch_PTerm(.75);
+        Servo3.setPitch_PTerm(.075);
         Servo3.setPitch_ITerm(.0001);
         Servo3.setPitch_DTerm((.95));
-        Servo3.setYaw_PTerm(.75);
+        Servo3.setYaw_PTerm(.075);
         Servo3.setYaw_ITerm(.0001);
         Servo3.setYaw_DTerm(.95);
 
         //InitializeServoSettings Servo 4
         Servo4 = new ControlServo();
-        Servo4.setPitch_PTerm(.75);
+        Servo4.setPitch_PTerm(.075);
         Servo4.setPitch_ITerm(.0001);
         Servo4.setPitch_DTerm((.95));
-        Servo4.setYaw_PTerm(.75);
+        Servo4.setYaw_PTerm(.075);
         Servo4.setYaw_ITerm(.0001);
         Servo4.setYaw_DTerm(.95);
 
@@ -232,7 +232,6 @@ public class control_screen extends AppCompatActivity implements SensorEventList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         InitializeServoSettings();
-        Log.d(TAG, "at onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.control_screen);
 
@@ -251,6 +250,7 @@ public class control_screen extends AppCompatActivity implements SensorEventList
         Accum2 = findViewById(R.id.Accum2);
         Accum3 = findViewById(R.id.Accum3);
         Accum4 = findViewById(R.id.Accum4);
+
         //Connect to Sensor
         SensorData = (SensorManager) getSystemService(SENSOR_SERVICE);
         user_name = getIntent().getExtras().get("user_name").toString();
@@ -394,6 +394,8 @@ public class control_screen extends AppCompatActivity implements SensorEventList
             return;
         }
 
+        if (UAV_Pilot_name.equals("HOST")) {
+
         float cmdX = ((Number)cmdMap.get("x")).floatValue();
         float cmdY = ((Number)cmdMap.get("y")).floatValue();
         float cmdZ = ((Number)cmdMap.get("z")).floatValue();
@@ -404,21 +406,22 @@ public class control_screen extends AppCompatActivity implements SensorEventList
                 String.format("%.2f", cmdY) + ", " +
                 String.format("%.2f", cmdZ));
 
-        if (UAV_Pilot_name.equals("HOST")) {
+            // TODO: store both location and UAV servo/orientation information
+//            Map<String, Object> map = new HashMap<String, Object>();
+//            temp_key = root.push().getKey();
+//            DatabaseReference message_root = root.child(temp_key);
+//
+//            // Sending UAV's currentlocation to FireBase
+//            map.put("name", user_name);
+//            map.put("location", currentLocation);
+//            message_root.updateChildren(map);
 
-            Map<String, Object> map = new HashMap<String, Object>();
-            temp_key = root.push().getKey();
-            DatabaseReference message_root = root.child(temp_key);
-
-            // Sending UAV's currentlocation to FireBase
-            map.put("name", user_name);
-            map.put("location", currentLocation);
-            message_root.updateChildren(map);
-            desiredPitch = -1.0f * maxPitch * cmdY;
-            desiredYaw = -1.0f * maxYaw * cmdX;
+            // Adjustments for flight
+            desiredPitch = maxPitch * cmdY;
+            desiredYaw = maxYaw * cmdX;
 
             for (int j = 0; j < 4; j++) {
-                Servo_Arr[j] += -1.0f * zMultiplier * cmdZ; // increase all servo speeds
+                Servo_Arr[j] += zMultiplier * cmdZ; // increase all servo speeds
                 Servo_Arr[j] = chk_min_max_speed(Servo_Arr[j]); // Max of 90, Min of 10
             }
             Log.d("Test", "Servo_Arr[0]: " + Servo_Arr[0]);
