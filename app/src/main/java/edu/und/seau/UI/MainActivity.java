@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import edu.und.seau.common.SharedResourceManager;
+
 import edu.und.seau.di.components.DaggerPresentationComponent;
 import edu.und.seau.di.components.PresentationComponent;
 import edu.und.seau.presentation.presenters.MainScreenPresenter;
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
     private ActivityMainBinding binding;
     private static final String TAG = MainActivity.class.getSimpleName();
 
+
     private static final String[] LOCATION_PERMS={
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
@@ -31,9 +32,9 @@ public class MainActivity extends AppCompatActivity implements MainView {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedResourceManager.setSharedPreferences(getPreferences(MODE_PRIVATE));
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         PresentationComponent component = DaggerPresentationComponent.create();
+
         presenter = component.getMainPresenter();
         presenter.setView(this);
 
@@ -50,9 +51,18 @@ public class MainActivity extends AppCompatActivity implements MainView {
         presenter.onConnectClicked();
     }
 
+    public void setID(String ID){
+        if(binding != null){
+            binding.idTextView.setText(ID);
+        }
+    }
+
     public void onConnected()
     {
-        startActivity(new Intent(this, connect_screen.class));
+        Intent connectScreenIntent = new Intent(this, connect_screen.class);
+        connectScreenIntent.putExtra(connect_screen.KEY_PASSED_UAV_ID,binding.idTextView.getText());
+        connectScreenIntent.putExtra(connect_screen.KEY_UAV_NAME, binding.selectedName.getText());
+        startActivity(connectScreenIntent);
     }
 
     public SharedPreferences getSharedPreferences(){

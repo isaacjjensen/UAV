@@ -8,7 +8,6 @@ import edu.und.seau.lib.UAV.objects.UAV;
 
 public interface FirebaseDatabaseInterface {
 
-    void initializeUAVDBInstance(Consumer<UAV> onResult);
-    void updateUAVName(UAV uav, Consumer<Boolean> onResult);
-    void getUAVDBInstance(Consumer<UavDBModel> onResult);
+    void DoesUAVExist(String uavID, Consumer<Boolean> OnResult);
+    void CreateNewUAV(Consumer<String> OnResult);
 }

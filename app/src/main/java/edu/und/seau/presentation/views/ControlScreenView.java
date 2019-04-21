@@ -1,6 +1,8 @@
 package edu.und.seau.presentation.views;
 
-public interface ControlScreenView {
+import android.content.SharedPreferences;
 
+public interface ControlScreenView {
+    SharedPreferences getSharedPreferences();
 
 }

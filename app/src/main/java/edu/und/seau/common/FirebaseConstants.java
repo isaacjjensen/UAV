@@ -8,5 +8,6 @@ public class FirebaseConstants {
     public static final String KEY_UAV  = "UAV";
     public static final String KEY_EMAIL  = "email";
     public static final String KEY_SERVERSETTINGS = "ServerSettings";
-    public static final String KEY_REQUESTS ="requests";
+    public static final String KEY_REQUESTS ="Requests";
+    public static final String KEY_RESPONSES ="Responses";
 }

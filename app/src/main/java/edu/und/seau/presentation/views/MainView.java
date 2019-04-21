@@ -6,4 +6,5 @@ public interface MainView {
     void onConnected();
     String getSelectedName();
     SharedPreferences getSharedPreferences();
+    void setID(String ID);
 }
