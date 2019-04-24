@@ -3,27 +3,21 @@ package edu.und.seau.presentation.presenters;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import com.google.android.gms.location.LocationRequest;
 import com.google.firebase.firestore.ListenerRegistration;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Objects;
 
 import javax.inject.Inject;
 
-import edu.und.seau.common.SharedPreferenceKeys;
 import edu.und.seau.firebase.commands.Command;
 import edu.und.seau.firebase.commands.CommandManager;
 import edu.und.seau.firebase.commands.enumerations.ControlStatus;
 import edu.und.seau.firebase.database.FirebaseDatabaseInterface;
-import edu.und.seau.firebase.models.uav.UavDBModel;
-import edu.und.seau.lib.UAV.objects.UAV;
 import edu.und.seau.presentation.views.ConnectionScreenView;
 
-import static edu.und.seau.UI.connect_screen.KEY_PASSED_UAV_ID;
-import static edu.und.seau.UI.connect_screen.KEY_UAV_NAME;
+import static edu.und.seau.ui.connect_screen.KEY_PASSED_UAV_ID;
+import static edu.und.seau.ui.connect_screen.KEY_UAV_NAME;
 
 public class ConnectionScreenPresenter {
     private FirebaseDatabaseInterface databaseInterface;

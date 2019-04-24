@@ -1,9 +1,8 @@
-package edu.und.seau.UI;
+package edu.und.seau.ui;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -13,8 +12,6 @@ import androidx.databinding.DataBindingUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
-
-import java.security.Permission;
 
 import edu.und.seau.uav.R;
 import edu.und.seau.uav.databinding.ControlScreenBinding;

@@ -1,4 +1,4 @@
-package edu.und.seau.UI;
+package edu.und.seau.ui;
 
 import android.Manifest;
 import android.app.PendingIntent;

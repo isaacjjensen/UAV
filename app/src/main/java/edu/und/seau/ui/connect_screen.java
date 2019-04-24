@@ -1,4 +1,4 @@
-package edu.und.seau.UI;
+package edu.und.seau.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,8 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-
-import java.util.Objects;
 
 import edu.und.seau.di.components.DaggerPresentationComponent;
 import edu.und.seau.di.components.PresentationComponent;
