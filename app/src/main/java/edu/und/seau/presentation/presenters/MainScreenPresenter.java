@@ -50,9 +50,7 @@ public class MainScreenPresenter {
             });
         }
         else{
-            databaseInterface.DoesUAVExist(uavIDString, aBoolean -> {
-                CheckIfUAVIDExists(sharedPreferences, uavIDString, aBoolean);
-            });
+            databaseInterface.DoesUAVExist(uavIDString, aBoolean -> CheckIfUAVIDExists(sharedPreferences, uavIDString, aBoolean));
         }
     }
 

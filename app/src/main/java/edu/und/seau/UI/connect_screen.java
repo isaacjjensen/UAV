@@ -32,28 +32,19 @@ public class connect_screen extends AppCompatActivity implements ConnectionScree
         component = DaggerPresentationComponent.create();
         presenter = component.getConnectionScreenPresenter();
 
-        HandleExtraData();
-
         presenter.setView(this);
     }
 
-    private void HandleExtraData(){
-        Bundle extraData = getIntent().getExtras();
-        if(extraData != null){
-            if(extraData.containsKey(KEY_PASSED_UAV_ID)){
-                String uavID = Objects.requireNonNull(extraData.getCharSequence(KEY_PASSED_UAV_ID)).toString();
-                setUavID(uavID);
-            }
-            if(extraData.containsKey(KEY_UAV_NAME)){
-                String uavName = Objects.requireNonNull(extraData.getCharSequence(KEY_UAV_NAME).toString());
-                setUavName(uavName);
-            }
-        }
+    public Bundle GetExtraData(){
+        return getIntent().getExtras();
     }
 
+
     @Override
-    public void onConnected() {
-        startActivity(new Intent(this, control_screen.class));
+    public void onConnected(String uavID) {
+        Intent controlIntent = new Intent(this, control_screen.class);
+        controlIntent.putExtra(KEY_PASSED_UAV_ID, uavID);
+        startActivity(controlIntent);
     }
 
     public SharedPreferences getSharedPreferences(){
