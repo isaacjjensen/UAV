@@ -1,7 +1,6 @@
 package edu.und.seau.lib.UAV.objects;
 
 import androidx.annotation.NonNull;
-import edu.und.seau.common.UAVCommon;
 
 public class UAV {
 
@@ -20,10 +19,6 @@ public class UAV {
 
     public void setId(String id){ this.id = id; }
 
-    public void generateNewID()
-    {
-        id = UAVCommon.getRandomString();
-    }
 
     public UAV()
     {

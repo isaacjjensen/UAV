@@ -2,12 +2,14 @@ package edu.und.seau.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
+import edu.und.seau.common.FirebaseConstants;
 import edu.und.seau.di.components.DaggerPresentationComponent;
 import edu.und.seau.di.components.PresentationComponent;
 import edu.und.seau.presentation.presenters.ConnectionScreenPresenter;
@@ -33,15 +35,17 @@ public class connect_screen extends AppCompatActivity implements ConnectionScree
         presenter.setView(this);
     }
 
+    @Override
     public Bundle GetExtraData(){
         return getIntent().getExtras();
     }
 
 
     @Override
-    public void onConnected(String uavID) {
+    public void onConnected(String uavID, String userID) {
         Intent controlIntent = new Intent(this, control_screen.class);
         controlIntent.putExtra(KEY_PASSED_UAV_ID, uavID);
+        controlIntent.putExtra(FirebaseConstants.KEY_USERNAME, uavID);
         startActivity(controlIntent);
     }
 
@@ -57,5 +61,10 @@ public class connect_screen extends AppCompatActivity implements ConnectionScree
     @Override
     public void setUavID(String id) {
         binding.idValue.setText(id);
+    }
+
+    @Override
+    public void setQRCode(Bitmap QRCode) {
+        binding.uavQrCodeImageView.setImageBitmap(QRCode);
     }
 }

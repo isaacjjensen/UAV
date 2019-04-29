@@ -79,5 +79,27 @@
             app:layout_constraintStart_toEndOf="@+id/id_const"
             app:layout_constraintTop_toTopOf="@+id/id_const" />
 
+        <ImageView
+            android:id="@+id/uav_qr_code_image_view"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="UAV Scan Code"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/id_value" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

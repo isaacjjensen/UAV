@@ -1,15 +1,19 @@
 package edu.und.seau.presentation.presenters;
 
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.zxing.WriterException;
 
 import java.util.List;
 import java.util.Objects;
 
 import javax.inject.Inject;
 
+import androidmads.library.qrgenearator.QRGContents;
+import androidmads.library.qrgenearator.QRGEncoder;
 import edu.und.seau.firebase.commands.Command;
 import edu.und.seau.firebase.commands.CommandManager;
 import edu.und.seau.firebase.commands.enumerations.ControlStatus;
@@ -75,17 +79,28 @@ public class ConnectionScreenPresenter {
             databaseInterface.DeleteRequest(uavID, userID,null);
         }
         if(request != null){
-            OnControlRequested(uavID);
+            OnControlRequested(uavID, request.getCommandID());
         }
         else {
             ListenForControlRequests();
         }
     }
 
-    private void OnControlRequested( String uavID){
+    private void OnControlRequested( String uavID, String userID){
         if(view != null){
-            view.onConnected(uavID);
+            view.onConnected(uavID, userID);
         }
+    }
+
+    private Bitmap GenerateQRCode(String uavID){
+        Bitmap returnValue = null;
+        QRGEncoder encoder = new QRGEncoder(uavID,null, QRGContents.Type.TEXT,75);
+        try {
+            returnValue =  encoder.encodeAsBitmap();
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+        return  returnValue;
     }
 
     private void HandleExtraData(Bundle extraData){
@@ -95,18 +110,16 @@ public class ConnectionScreenPresenter {
                 if(extraData.containsKey(KEY_PASSED_UAV_ID)){
                     uavID = Objects.requireNonNull(extraData.getCharSequence(KEY_PASSED_UAV_ID)).toString();
                     view.setUavID(uavID);
-
+                    view.setQRCode(GenerateQRCode(uavID));
                 }
                 if(extraData.containsKey(KEY_UAV_NAME)){
-                    String uavName = Objects.requireNonNull(extraData.getCharSequence(KEY_UAV_NAME).toString());
+                    String uavName = Objects.requireNonNull(Objects.requireNonNull(extraData.getCharSequence(KEY_UAV_NAME)).toString());
                     view.setUavName(uavName);
                 }
             }
             else {
-                extraData = new Bundle();
+                this.extraData = new Bundle();
             }
         }
     }
-
-
 }

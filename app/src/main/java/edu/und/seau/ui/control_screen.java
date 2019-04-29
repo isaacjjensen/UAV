@@ -1,6 +1,7 @@
 package edu.und.seau.ui;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -13,10 +14,11 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 
+import edu.und.seau.presentation.views.ControlScreenView;
 import edu.und.seau.uav.R;
 import edu.und.seau.uav.databinding.ControlScreenBinding;
 
-public class control_screen extends AppCompatActivity {
+public class control_screen extends AppCompatActivity implements ControlScreenView {
     private ControlScreenBinding binding;
 
 
@@ -30,6 +32,15 @@ public class control_screen extends AppCompatActivity {
 
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
 
+    }
+
+    public SharedPreferences getSharedPreferences(){
+        return getPreferences(MODE_PRIVATE);
+    }
+
+    @Override
+    public Bundle GetExtraData(){
+        return getIntent().getExtras();
     }
 
     private void startLocationUpdates() {

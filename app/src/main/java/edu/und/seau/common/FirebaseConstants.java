@@ -18,4 +18,10 @@ public class FirebaseConstants {
     public static final String KEY_DURATION = "DURATION";
     public static final String KEY_GPS_LOCATION = "GPS LOCATION";
     public static final String KEY_CONTROL_STATUS = "CONTROL STATUS";
+    public static final String KEY_TIME_STAMP = "TIME_STAMP";
+    public static final String KEY_MODEL_STRING = "MODEL STRING";
+    public static final String KEY_STATUS = "STATUS";
+    public static final String KEY_MOVEMENT_TYPE = "MOVEMENT TYPE";
+    public static final String KEY_TIMEOUT = "TIMEOUT";
+    public static final long MaxPublicCommandNumber = 999;
 }
